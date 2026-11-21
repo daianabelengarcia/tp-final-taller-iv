@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inicio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#0a0a07}
+a{color:#c9d97a}a:hover{color:#e6f0a0}
+.blink{animation:blink 1s infinite steps(1)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+</style>
+</helmet>
+<div style="width: 1280px; height: 720px; position: relative; overflow: hidden; font-family: 'VT323', monospace; color: #e6dfc0; background: #0a0a07">
+<img src="assets/img/tramo0.png" alt="Andén de la línea A con el tren detenido" style="position: absolute; inset: 0; width: 1280px; height: 720px; image-rendering: pixelated; filter: brightness(.42)">
+
+<div style="position: absolute; left: 480px; top: 40px; width: 320px; height: 640px; background: #1d1e18; border-radius: 30px; box-shadow: 0 0 0 4px #070705, 0 0 0 7px #3b3d2c, 12px 16px 0 0 rgba(0,0,0,.5); padding: 16px 14px; box-sizing: border-box">
+<div style="height: 100%; background: #0d100c; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center">
+
+<div style="align-self: stretch; display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; font-size: 19px; color: #bdb795">
+<span>08:50</span>
+<div style="display: flex; align-items: center; gap: 8px">
+<svg role="img" aria-label="Señal baja" width="18" height="12" viewBox="0 0 9 6" shape-rendering="crispEdges"><rect x="0" y="4" width="2" height="2" fill="#bdb795"></rect><rect x="3" y="2" width="2" height="4" fill="#bdb795"></rect><rect x="6" y="0" width="2" height="6" fill="#3b3d2c"></rect></svg>
+<span>23%</span>
+<svg role="img" aria-label="Batería 23 por ciento" width="28" height="16" viewBox="0 0 14 8" shape-rendering="crispEdges"><rect x="0" y="0" width="12" height="1" fill="#bdb795"></rect><rect x="0" y="7" width="12" height="1" fill="#bdb795"></rect><rect x="0" y="0" width="1" height="8" fill="#bdb795"></rect><rect x="11" y="0" width="1" height="8" fill="#bdb795"></rect><rect x="12" y="2" width="2" height="4" fill="#bdb795"></rect><rect x="2" y="2" width="2" height="4" fill="#e8b33a"></rect></svg>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 26px">
+<div style="width: 46px; height: 46px; border-radius: 50%; background: #f2c200; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 24px; color: #10110c">H</div>
+<span style="font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 20px; letter-spacing: 2px; color: #e6dfc0">LÍNEA H</span>
+</div>
+
+<div style="display: flex; align-items: baseline; gap: 8px; margin-top: 30px">
+<span style="font-size: 76px; line-height: .8; color: #f2c200">10:00</span>
+<span style="font-family: 'Silkscreen', monospace; font-size: 14px; color: #8f8c72">MIN</span>
+</div>
+
+<div role="img" aria-label="Mapa: estás en la línea A, combinás en Plaza Miserere con la línea H hasta el trabajo" style="position: relative; width: 268px; height: 150px; margin-top: 44px; background: #0f110d; box-shadow: 0 0 0 2px #2c2d21; overflow: hidden">
+<sc-for list="{{lines}}" as="ln" hint-placeholder-count="20"><div style="position: absolute; left: {{ln.l}}; top: {{ln.t}}; width: {{ln.w}}; height: {{ln.h}}; transform-origin: 0 50%; transform: rotate({{ln.a}}); background: {{ln.c}}; opacity: {{ln.o}}; border-radius: 2px"></div></sc-for>
+<sc-for list="{{stops}}" as="st" hint-placeholder-count="7"><div style="position: absolute; left: {{st.l}}; top: {{st.t}}; width: 8px; height: 8px; margin: -4px 0 0 -4px; background: #0f110d; box-shadow: inset 0 0 0 2px {{st.c}}"></div></sc-for>
+<div style="position: absolute; left: {{aL}}; top: {{aT}}; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #3bb3e6; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 9px; color: #10110c; box-shadow: 0 0 0 2px #070705">A</div>
+<div style="position: absolute; left: {{hL}}; top: {{hT}}; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #f2c200; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 9px; color: #10110c; box-shadow: 0 0 0 2px #070705">H</div>
+<div style="position: absolute; left: {{wL}}; top: {{wT}}; width: 20px; height: 20px; margin: -10px 0 0 -10px; background: #f2c200; box-shadow: 0 0 0 2px #070705; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="1" width="4" height="1" fill="#10110c"></rect><rect x="4" y="1" width="1" height="2" fill="#10110c"></rect><rect x="7" y="1" width="1" height="2" fill="#10110c"></rect><rect x="1" y="3" width="10" height="7" fill="#10110c"></rect><rect x="5" y="5" width="2" height="3" fill="#f2c200"></rect></svg></div>
+<div class="blink" style="position: absolute; left: {{meL}}; top: {{meT}}; margin: -26px 0 0 -8px"><svg aria-hidden="true" width="16" height="14" viewBox="0 0 8 7" shape-rendering="crispEdges"><rect x="1" y="0" width="6" height="5" fill="#e6dfc0"></rect><rect x="3" y="5" width="2" height="1" fill="#e6dfc0"></rect><rect x="3" y="1" width="2" height="2" fill="#10110c"></rect></svg></div>
+</div>
+
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() {
+    // el mismo plano que hay que trazar en el juego, en chico
+    const PATH = [[90, 150], [250, 150], [310, 205], [470, 205], [470, 305], [570, 360], [570, 445]];
+    const OTHER = [
+      { c: '#3bb3e6', p: [[30, 150], [90, 150]] }, { c: '#3bb3e6', p: [[470, 205], [630, 205], [700, 150], [930, 150]] },
+      { c: '#f2c200', p: [[470, 205], [470, 40]] }, { c: '#f2c200', p: [[570, 445], [570, 490]] },
+      { c: '#e05a4a', p: [[40, 90], [380, 90], [560, 60], [930, 60]] }, { c: '#9b6fc0', p: [[120, 480], [330, 300], [650, 300], [930, 430]] },
+      { c: '#5aa37a', p: [[40, 380], [300, 380], [400, 440], [930, 440]] }, { c: '#2f7dbf', p: [[780, 30], [780, 490]] }
+    ];
+    const k = 0.28, ox = -2, oy = -6;
+    const T = (q) => [q[0] * k + ox, q[1] * k + oy];
+    const P = (v) => Math.round(v) + 'px';
+    const seg = (a, b, c, o, h) => { const A = T(a), B = T(b); return { l: P(A[0]), t: P(A[1] - h / 2), w: P(Math.hypot(B[0] - A[0], B[1] - A[1])), h: h + 'px', a: Math.atan2(B[1] - A[1], B[0] - A[0]).toFixed(4) + 'rad', c, o }; };
+    const lines = [];
+    OTHER.forEach((ln) => { for (let i = 0; i < ln.p.length - 1; i++) lines.push(seg(ln.p[i], ln.p[i + 1], ln.c, '0.35', 3)); });
+    for (let i = 0; i < PATH.length - 1; i++) lines.push(seg(PATH[i], PATH[i + 1], i < 3 ? '#3bb3e6' : '#f2c200', '1', 5));
+    const stops = PATH.slice(1, -1).map((q, i) => { const t = T(q); return { l: P(t[0]), t: P(t[1]), c: i < 2 ? '#3bb3e6' : i === 2 ? '#e6dfc0' : '#f2c200' }; });
+    const a = T(PATH[0]), h = T(PATH[3]), w = T(PATH[6]);
+    return { lines, stops, aL: P(a[0]), aT: P(a[1]), hL: P(h[0] + 16), hT: P(h[1] - 14), wL: P(w[0]), wT: P(w[1]), meL: P(a[0]), meT: P(a[1]) };
+  }
+}
+</script>
+</body>
+</html>

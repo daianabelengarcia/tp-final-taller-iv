@@ -1,0 +1,1517 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Recorrido jugable</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#0a0a07}
+.stage:focus{outline:none}
+.bg{image-rendering:pixelated}
+.spr{position:absolute;width:48px;height:80px;background-image:url(assets/img/sprites.png);background-size:288px 1840px;background-repeat:no-repeat;image-rendering:pixelated;transform-origin:50% 100%}
+.shadow{position:absolute;height:8px;border-radius:50%;background:rgba(10,10,6,.34)}
+.restart{all:unset;cursor:pointer;box-sizing:border-box;padding:10px 16px;min-height:44px;display:flex;align-items:center;gap:10px;background:#14150f;box-shadow:3px 0 0 0 #3b3d2c,-3px 0 0 0 #3b3d2c,0 3px 0 0 #3b3d2c,0 -3px 0 0 #3b3d2c;font-family:'Silkscreen',monospace;font-size:12px;color:#e6dfc0}
+.restart:hover,.restart:focus-visible{box-shadow:3px 0 0 0 #e8b33a,-3px 0 0 0 #e8b33a,0 3px 0 0 #e8b33a,0 -3px 0 0 #e8b33a}
+.pulse{position:absolute;border-radius:50%;border:2px solid #e8b33a;box-sizing:border-box;animation:pulse 1.6s infinite ease-out;pointer-events:none}
+@keyframes pulse{0%{transform:scale(.25);opacity:.9}100%{transform:scale(1.6);opacity:0}}
+.float{animation:float 2.2s infinite ease-in-out}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.blink{animation:blink 1s infinite steps(1)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.note{position:absolute;animation:note 2.4s infinite ease-out;pointer-events:none}
+@keyframes note{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(14px,-56px);opacity:0}}
+.vhs{background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.07) 0 2px,transparent 2px 6px);animation:vhs .2s infinite steps(2)}
+@keyframes vhs{0%{background-position:0 0}100%{background-position:0 6px}}
+.buzz{animation:buzz .09s infinite steps(2)}
+@keyframes buzz{0%{transform:translate(-4px,1px) rotate(-2deg)}100%{transform:translate(4px,-1px) rotate(2deg)}}
+.pop{animation:pop .22s cubic-bezier(.2,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.alarm{animation:alarm .5s infinite steps(1)}
+@keyframes alarm{0%{box-shadow:0 0 0 6px #e05a4a,0 0 0 10px #070705,0 0 60px rgba(224,90,74,.9)}50%{box-shadow:0 0 0 6px #f4f0dc,0 0 0 10px #070705,0 0 20px rgba(224,90,74,.4)}}
+.redpulse{animation:redpulse .5s infinite steps(2)}
+@keyframes redpulse{0%{opacity:.75}100%{opacity:.25}}
+.fadein{animation:fadein .6s ease-out}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.scan{background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 3px);pointer-events:none}
+.layer{position:absolute;top:0;width:1280px;height:720px;image-rendering:pixelated;pointer-events:none}
+.glow{mix-blend-mode:screen;animation:hum 7s infinite steps(1)}
+@keyframes hum{0%,100%{opacity:.55}31%{opacity:.48}32%{opacity:.58}64%{opacity:.52}65%{opacity:.56}}
+.hud{background:linear-gradient(180deg,rgba(28,29,24,.94),rgba(12,13,10,.94));box-shadow:inset 0 0 0 2px #3b3d2c,inset 0 3px 0 0 #55574a,0 6px 18px rgba(0,0,0,.45);clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)}
+.tag{position:absolute;min-width:22px;height:22px;padding:0 3px;box-sizing:border-box;background:#14150f;box-shadow:0 0 0 2px #070705,0 0 0 3px #55574a;display:flex;align-items:center;justify-content:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:11px;line-height:1;color:#e6dfc0;pointer-events:none;animation:tagin .16s ease-out;white-space:nowrap}
+@keyframes tagin{from{transform:translateY(6px) scale(.5);opacity:0}to{transform:none;opacity:1}}
+.grr{background:#3a0f0b;box-shadow:0 0 0 2px #070705,0 0 0 3px #e05a4a;animation:grr .1s infinite steps(2)}
+@keyframes grr{0%{transform:translate(-1px,0) rotate(-4deg)}100%{transform:translate(1px,-1px) rotate(4deg)}}
+.shk{animation:shk .1s infinite steps(2)}
+@keyframes shk{0%{transform:translate(-2px,0)}100%{transform:translate(2px,-1px)}}
+.beat{animation:beat .5s infinite ease-out}
+@keyframes beat{0%{transform:scale(1.12)}100%{transform:scale(1)}}
+.chl{animation:chl .5s infinite steps(1)}
+@keyframes chl{0%{opacity:1}50%{opacity:.2}}
+.chr{animation:chr .5s infinite steps(1)}
+@keyframes chr{0%{opacity:.2}50%{opacity:1}}
+.puddle{position:absolute;border-radius:50%;background:radial-gradient(ellipse at 40% 40%,rgba(220,240,255,.55),rgba(140,180,210,.32) 45%,rgba(90,130,160,.18) 70%,rgba(90,130,160,0) 72%);pointer-events:none}
+.tape{background:repeating-linear-gradient(135deg,#f2c200 0 14px,#10110c 14px 28px)}
+.seg{position:absolute;height:8px;transform-origin:0 50%;border-radius:4px}
+</style>
+</helmet>
+<div class="stage" tabIndex="0" ref="{{stageRef}}" onKeyDown="{{keyDown}}" onKeyUp="{{keyUp}}" onPointerDown="{{pointerDown}}" onPointerMove="{{pointerMove}}" onPointerUp="{{pointerUp}}" onPointerLeave="{{pointerUp}}" aria-label="Recorrido jugable: flechas o clic para caminar, espacio o clic sostenido para actuar" style="width: 1280px; height: 720px; position: relative; overflow: hidden; font-family: 'VT323', monospace; color: #e6dfc0; background: #0a0a07; cursor: {{cursor}}">
+
+<!-- El mundo: un solo recorrido de la A a la H. La cámara sigue al personaje -->
+<div style="position: absolute; left: 0; top: 0; width: 8960px; height: 720px; transform-origin: 0 0; transform: translate({{wx}}, {{wy}}) scale({{zoom}}); filter: {{worldFilter}}">
+<sc-for list="{{bgs}}" as="b" hint-placeholder-count="2">
+<img class="bg" src="{{b.src}}" alt="{{b.alt}}" style="position: absolute; left: {{b.l}}; top: 0; width: 1280px; height: 720px">
+</sc-for>
+<sc-if value="{{showTrain}}" hint-placeholder-val="{{ false }}"><img class="layer" src="assets/img/tren-a.png" alt="Tren de la línea A que se va" style="left: {{trainX}}"></sc-if>
+
+<!-- Ascensor fuera de servicio -->
+<div class="tape" style="position: absolute; left: 6194px; top: 236px; width: 236px; height: 14px; opacity: .9"></div>
+<div class="tape" style="position: absolute; left: 6194px; top: 168px; width: 236px; height: 14px; opacity: .9"></div>
+<img src="assets/img/fuera-de-servicio.png" alt="Ascensor fuera de servicio" style="position: absolute; left: 6252px; top: 184px; width: 120px; height: 52px; image-rendering: pixelated">
+<!-- Botón de emergencia en la pared -->
+<div style="position: absolute; left: {{sosL}}; top: 226px; width: 28px; height: 36px; {{sosFx}}">
+<img src="assets/img/sos.png" alt="Botón de emergencia" style="width: 28px; height: 36px; image-rendering: pixelated; display: block">
+</div>
+
+<!-- Piso mojado -->
+<sc-for list="{{puddles}}" as="pd" hint-placeholder-count="0">
+<div class="puddle" style="left: {{pd.l}}; top: {{pd.t}}; width: {{pd.w}}; height: {{pd.h}}; opacity: {{pd.o}}"></div>
+</sc-for>
+
+<!-- Luz sobre quien necesita algo -->
+<sc-if value="{{showSpot}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: {{spotL}}; top: {{spotT}}; width: 220px; height: 110px; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(255,214,120,.40) 0%, rgba(255,200,90,.14) 45%, rgba(255,200,90,0) 72%); opacity: {{spotOp}}; mix-blend-mode: screen; pointer-events: none"></div>
+</sc-if>
+
+<!-- Molinetes: brazos y lectores -->
+<sc-for list="{{gates}}" as="gt" hint-placeholder-count="3">
+<div style="position: absolute; left: {{gt.rl}}; top: {{gt.rt}}; width: 20px; height: 5px; background: {{gt.c}}; box-shadow: 0 0 10px {{gt.c}}; z-index: {{gt.z}}"></div>
+<sc-if value="{{gt.closed}}" hint-placeholder-val="{{ true }}"><div style="position: absolute; left: {{gt.al}}; top: {{gt.at}}; width: 60px; height: 6px; background: #b8bab4; box-shadow: 0 0 0 2px #070705; z-index: {{gt.z}}"></div></sc-if>
+<sc-if value="{{gt.broken}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; left: {{gt.xl}}; top: {{gt.xt}}; width: 20px; height: 20px; background: #e05a4a; box-shadow: 0 0 0 2px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 12px; color: #10110c; z-index: {{gt.z}}">X</div></sc-if>
+</sc-for>
+
+<!-- Objetos del piso (ordenados por profundidad con la gente) -->
+<sc-for list="{{props}}" as="o" hint-placeholder-count="0">
+<img src="{{o.src}}" alt="{{o.alt}}" style="position: absolute; left: {{o.l}}; top: {{o.t}}; width: {{o.w}}; height: {{o.h}}; z-index: {{o.z}}; image-rendering: pixelated; transform-origin: 50% 100%; transform: {{o.tr}}; filter: {{o.f}}">
+</sc-for>
+
+<!-- Documento pateado por el piso -->
+<sc-if value="{{showDni}}" hint-placeholder-val="{{ false }}">
+<svg role="img" aria-label="Documento en el piso" style="position: absolute; left: {{dniL}}; top: {{dniT}}; transform: rotate({{dniRot}}); z-index: 2" width="28" height="20" viewBox="0 0 14 10" shape-rendering="crispEdges"><rect x="0" y="0" width="14" height="10" fill="#14130f"></rect><rect x="1" y="1" width="12" height="8" fill="#d8d0b0"></rect><rect x="2" y="2" width="3" height="5" fill="#7d7a62"></rect><rect x="7" y="3" width="5" height="1" fill="#7d7a62"></rect><rect x="7" y="6" width="4" height="1" fill="#7d7a62"></rect></svg>
+</sc-if>
+<!-- Estuche del artista -->
+<svg aria-hidden="true" style="position: absolute; left: 3178px; top: 318px; z-index: 318" width="40" height="20" viewBox="0 0 10 5" shape-rendering="crispEdges"><rect x="0" y="1" width="10" height="4" fill="#14130f"></rect><rect x="1" y="2" width="8" height="2" fill="#5a2420"></rect><sc-if value="{{coinInCase}}" hint-placeholder-val="{{ false }}"><rect x="4" y="2" width="2" height="1" fill="#e8b33a"></rect></sc-if></svg>
+<sc-if value="{{showNotes}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{notes}}" as="n" hint-placeholder-count="3">
+<div class="note" style="left: {{n.l}}; top: {{n.t}}; animation-delay: {{n.d}}; z-index: 900"><svg width="16" height="16" viewBox="0 0 6 6" aria-hidden="true" shape-rendering="crispEdges"><rect x="3" y="0" width="1" height="4" fill="{{noteColor}}"></rect><rect x="4" y="0" width="2" height="1" fill="{{noteColor}}"></rect><rect x="1" y="3" width="3" height="2" fill="{{noteColor}}"></rect></svg></div>
+</sc-for>
+</sc-if>
+<!-- Café que le dejaste a quien duerme -->
+<sc-if value="{{showCup}}" hint-placeholder-val="{{ false }}">
+<svg aria-hidden="true" style="position: absolute; left: 1556px; top: 330px; z-index: 341" width="16" height="20" viewBox="0 0 4 5" shape-rendering="crispEdges"><rect x="0" y="0" width="4" height="1" fill="#f4f0dc"></rect><rect x="0" y="1" width="4" height="4" fill="#c9a26a"></rect><rect x="0" y="2" width="4" height="1" fill="#7a5a3a"></rect></svg>
+</sc-if>
+
+<!-- Pulso de "alguien te necesita" -->
+<sc-if value="{{showPulse}}" hint-placeholder-val="{{ false }}">
+<div class="pulse" style="left: {{pulseL}}; top: {{pulseT}}; width: 90px; height: 90px; opacity: {{pulseOp}}"></div>
+<div class="pulse" style="left: {{pulseL}}; top: {{pulseT}}; width: 90px; height: 90px; animation-delay: .8s; opacity: {{pulseOp}}"></div>
+</sc-if>
+
+<!-- Gente -->
+<sc-for list="{{actors}}" as="p" hint-placeholder-count="10">
+<div class="shadow" style="left: {{p.sl}}; top: {{p.st}}; width: {{p.sw}}; z-index: {{p.z}}"></div>
+<div class="spr" role="img" aria-label="{{p.label}}" style="left: {{p.l}}; top: {{p.t}}; z-index: {{p.z}}; background-position: {{p.bp}}; transform: {{p.tr}}; filter: {{p.filter}}"></div>
+</sc-for>
+
+<!-- Destino del clic -->
+<sc-if value="{{wtOn}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: {{wtL}}; top: {{wtT}}; width: 20px; height: 8px; border-radius: 50%; border: 2px solid rgba(240,236,220,.7); pointer-events: none"></div>
+</sc-if>
+
+<!-- Personaje -->
+<div style="position: absolute; left: {{prl}}; top: {{prt}}; width: 46px; height: 14px; border-radius: 50%; border: 2px solid rgba(240,236,220,.5); box-sizing: border-box; z-index: {{pz}}; pointer-events: none"></div>
+<div class="shadow" style="left: {{psl}}; top: {{pst}}; width: 34px; z-index: {{pz}}"></div>
+<div class="spr" role="img" aria-label="Tu personaje" style="left: {{pl}}; top: {{pt}}; z-index: {{pz}}; background-position: {{pbp}}; transform: {{ptr}}"></div>
+<sc-if value="{{carryDni}}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" style="position: absolute; left: {{cdL}}; top: {{cdT}}; z-index: {{pz}}" width="18" height="13" viewBox="0 0 14 10" shape-rendering="crispEdges"><rect x="0" y="0" width="14" height="10" fill="#14130f"></rect><rect x="1" y="1" width="12" height="8" fill="#d8d0b0"></rect><rect x="2" y="2" width="3" height="5" fill="#7d7a62"></rect></svg></sc-if>
+<sc-if value="{{showMe}}" hint-placeholder-val="{{ true }}">
+<div class="float" style="position: absolute; left: {{meL}}; top: {{meT}}; z-index: 945; pointer-events: none"><svg role="img" aria-label="Este sos vos" width="20" height="14" viewBox="0 0 10 7" shape-rendering="crispEdges"><rect x="0" y="0" width="10" height="2" fill="#14130f"></rect><rect x="1" y="2" width="8" height="2" fill="#14130f"></rect><rect x="3" y="4" width="4" height="2" fill="#14130f"></rect><rect x="1" y="0" width="8" height="1" fill="#f0ecdc"></rect><rect x="2" y="1" width="6" height="2" fill="#f0ecdc"></rect><rect x="4" y="3" width="2" height="2" fill="#f0ecdc"></rect></svg></div>
+</sc-if>
+
+<!-- Globitos: lo que hace y siente la gente -->
+<sc-for list="{{tags}}" as="tg" hint-placeholder-count="0">
+<div class="{{tg.cls}}" style="left: {{tg.l}}; top: {{tg.t}}; z-index: 941; color: {{tg.color}}">
+<sc-if value="{{tg.isTxt}}" hint-placeholder-val="{{ true }}"><span>{{tg.txt}}</span></sc-if>
+<sc-if value="{{tg.heart}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="2" width="3" height="1" fill="#e05a4a"></rect><rect x="6" y="2" width="3" height="1" fill="#e05a4a"></rect><rect x="0" y="3" width="10" height="3" fill="#e05a4a"></rect><rect x="1" y="6" width="8" height="1" fill="#e05a4a"></rect><rect x="2" y="7" width="6" height="1" fill="#e05a4a"></rect><rect x="3" y="8" width="4" height="1" fill="#e05a4a"></rect><rect x="4" y="9" width="2" height="1" fill="#e05a4a"></rect></svg></sc-if>
+<sc-if value="{{tg.card}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="3" width="10" height="7" fill="#2f7d6d"></rect><rect x="1" y="7" width="10" height="1" fill="#e8b33a"></rect><rect x="2" y="4" width="2" height="2" fill="#d8c27a"></rect></svg></sc-if>
+<sc-if value="{{tg.note}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="4" y="1" width="6" height="2" fill="#c9d97a"></rect><rect x="4" y="3" width="1" height="5" fill="#c9d97a"></rect><rect x="9" y="3" width="1" height="4" fill="#c9d97a"></rect><rect x="2" y="7" width="3" height="3" fill="#c9d97a"></rect><rect x="7" y="6" width="3" height="3" fill="#c9d97a"></rect></svg></sc-if>
+<sc-if value="{{tg.coin}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="2" y="2" width="8" height="8" fill="#e8b33a"></rect><rect x="5" y="4" width="2" height="4" fill="#b88a20"></rect></svg></sc-if>
+<sc-if value="{{tg.rec}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="2" width="8" height="6" fill="#bdb795"></rect><rect x="3" y="3" width="4" height="4" fill="#e05a4a"></rect></svg></sc-if>
+<sc-if value="{{tg.tear}}" hint-placeholder-val="{{ false }}"><svg width="10" height="14" viewBox="0 0 5 7" aria-hidden="true" shape-rendering="crispEdges"><rect x="2" y="0" width="1" height="2" fill="#8ec8f0"></rect><rect x="1" y="2" width="3" height="3" fill="#8ec8f0"></rect><rect x="2" y="5" width="1" height="1" fill="#8ec8f0"></rect></svg></sc-if>
+</div>
+</sc-for>
+
+<!-- Primer plano y luces de cada tramo -->
+<sc-for list="{{fgs}}" as="f" hint-placeholder-count="0"><img class="layer" src="{{f.src}}" alt="" aria-hidden="true" style="left: {{f.l}}; z-index: 925"></sc-for>
+<sc-for list="{{glows}}" as="gw" hint-placeholder-count="1"><img class="layer glow" src="{{gw.src}}" alt="" aria-hidden="true" style="left: {{gw.l}}; z-index: 926"></sc-for>
+
+<!-- Partículas -->
+<sc-for list="{{parts}}" as="q" hint-placeholder-count="0">
+<div style="position: absolute; left: {{q.l}}; top: {{q.t}}; width: {{q.s}}; height: {{q.s}}; background: {{q.c}}; opacity: {{q.o}}; z-index: 940; pointer-events: none"></div>
+</sc-for>
+
+<!-- Ritmo: anillo que se cierra sobre el personaje -->
+<sc-if value="{{rhythmOn}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: {{rtL}}; top: {{rtT}}; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #e6dfc0; box-sizing: border-box; pointer-events: none; z-index: 950"></div>
+<div style="position: absolute; left: {{rrL}}; top: {{rrT}}; width: {{rrS}}; height: {{rrS}}; border-radius: 50%; border: 3px solid #c9d97a; box-sizing: border-box; pointer-events: none; z-index: 950"></div>
+<div style="position: absolute; left: {{rdL}}; top: {{rdT}}; display: flex; gap: 5px; pointer-events: none; z-index: 950">
+<sc-for list="{{rhythmDots}}" as="d" hint-placeholder-count="4"><div style="width: 8px; height: 8px; background: {{d.bg}}; box-shadow: 0 0 0 2px #070705"></div></sc-for>
+</div>
+</sc-if>
+
+<!-- Esquivar: dos flechas que titilan a los costados -->
+<sc-if value="{{altOn}}" hint-placeholder-val="{{ false }}">
+<svg class="chl" aria-hidden="true" style="position: absolute; left: {{alL}}; top: {{alT}}; pointer-events: none; z-index: 950; filter: drop-shadow(2px 2px 0 #070705)" width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges"><rect x="4" y="0" width="2" height="2" fill="#e6dfc0"></rect><rect x="2" y="2" width="2" height="2" fill="#e6dfc0"></rect><rect x="0" y="4" width="2" height="1" fill="#e6dfc0"></rect><rect x="2" y="5" width="2" height="2" fill="#e6dfc0"></rect><rect x="4" y="7" width="2" height="2" fill="#e6dfc0"></rect></svg>
+<svg class="chr" aria-hidden="true" style="position: absolute; left: {{arL}}; top: {{alT}}; pointer-events: none; z-index: 950; transform: scaleX(-1); filter: drop-shadow(-2px 2px 0 #070705)" width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges"><rect x="4" y="0" width="2" height="2" fill="#e6dfc0"></rect><rect x="2" y="2" width="2" height="2" fill="#e6dfc0"></rect><rect x="0" y="4" width="2" height="1" fill="#e6dfc0"></rect><rect x="2" y="5" width="2" height="2" fill="#e6dfc0"></rect><rect x="4" y="7" width="2" height="2" fill="#e6dfc0"></rect></svg>
+</sc-if>
+
+<!-- Ícono de acción: chico de lejos, grande al llegar, se llena al mantener -->
+<sc-if value="{{showBubble}}" hint-placeholder-val="{{ false }}">
+<div class="float" style="position: absolute; left: {{bL}}; top: {{bT}}; pointer-events: none; z-index: 960">
+<div style="display: flex; flex-direction: column; align-items: center; transform: scale({{bS}}); transform-origin: 50% 100%; opacity: {{bOp}}; transition: transform .2s ease-out, opacity .2s">
+<div style="position: relative; width: 52px; height: 52px; background: #14150f; box-shadow: 0 0 0 3px {{bRing}}, 0 0 0 6px #070705, 0 0 20px rgba(232,179,58,{{bGlow}}); display: flex; align-items: center; justify-content: center">
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{holdPct}}; background: rgba(232,179,58,.55)"></div>
+<sc-if value="{{iGrab}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="3" y="1" width="7" height="4" fill="#e6dfc0"></rect><rect x="2" y="3" width="1" height="2" fill="#e6dfc0"></rect><rect x="3" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="5" y="5" width="1" height="3" fill="#e6dfc0"></rect><rect x="7" y="5" width="1" height="3" fill="#e6dfc0"></rect><rect x="9" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="3" y="9" width="7" height="2" fill="#d8d0b0"></rect></svg></sc-if>
+<sc-if value="{{iDni}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="3" width="10" height="7" fill="#d8d0b0"></rect><rect x="2" y="4" width="3" height="4" fill="#7d7a62"></rect><rect x="6" y="5" width="4" height="1" fill="#7d7a62"></rect><rect x="6" y="7" width="3" height="1" fill="#7d7a62"></rect></svg></sc-if>
+<sc-if value="{{iEye}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="3" y="3" width="6" height="1" fill="#e6dfc0"></rect><rect x="1" y="4" width="2" height="1" fill="#e6dfc0"></rect><rect x="9" y="4" width="2" height="1" fill="#e6dfc0"></rect><rect x="0" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="11" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="1" y="7" width="2" height="1" fill="#e6dfc0"></rect><rect x="9" y="7" width="2" height="1" fill="#e6dfc0"></rect><rect x="3" y="8" width="6" height="1" fill="#e6dfc0"></rect><rect x="4" y="4" width="4" height="4" fill="#8ec8f0"></rect><rect x="5" y="5" width="2" height="2" fill="#10110c"></rect></svg></sc-if>
+<sc-if value="{{iExplain}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="1" width="10" height="7" fill="#e6dfc0"></rect><rect x="2" y="8" width="2" height="2" fill="#e6dfc0"></rect><rect x="2" y="3" width="3" height="3" fill="#3bb3e6"></rect><rect x="5" y="4" width="2" height="1" fill="#10110c"></rect><rect x="7" y="3" width="3" height="3" fill="#f2c200"></rect></svg></sc-if>
+<sc-if value="{{iNote}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="4" y="1" width="6" height="2" fill="#c9d97a"></rect><rect x="4" y="3" width="1" height="5" fill="#c9d97a"></rect><rect x="9" y="3" width="1" height="4" fill="#c9d97a"></rect><rect x="2" y="7" width="3" height="3" fill="#c9d97a"></rect><rect x="7" y="6" width="3" height="3" fill="#c9d97a"></rect></svg></sc-if>
+<sc-if value="{{iFood}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="3" width="10" height="2" fill="#d8a860"></rect><rect x="1" y="5" width="10" height="1" fill="#7fd18a"></rect><rect x="1" y="6" width="10" height="1" fill="#e05a4a"></rect><rect x="1" y="7" width="10" height="1" fill="#f2c200"></rect><rect x="1" y="8" width="10" height="2" fill="#d8a860"></rect><rect x="2" y="2" width="8" height="1" fill="#d8a860"></rect></svg></sc-if>
+<sc-if value="{{iAlarm}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="3" y="3" width="6" height="7" fill="#e05a4a"></rect><rect x="4" y="2" width="4" height="1" fill="#e05a4a"></rect><rect x="2" y="10" width="8" height="1" fill="#bdb795"></rect><rect x="5" y="4" width="2" height="2" fill="#f4f0dc"></rect><rect x="1" y="2" width="1" height="1" fill="#f2c200"></rect><rect x="10" y="2" width="1" height="1" fill="#f2c200"></rect><rect x="0" y="5" width="1" height="1" fill="#f2c200"></rect><rect x="11" y="5" width="1" height="1" fill="#f2c200"></rect></svg></sc-if>
+<sc-if value="{{iMoney}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="5" y="0" width="2" height="2" fill="#7fd18a"></rect><rect x="4" y="2" width="5" height="1" fill="#7fd18a"></rect><rect x="3" y="3" width="2" height="2" fill="#7fd18a"></rect><rect x="4" y="5" width="4" height="1" fill="#7fd18a"></rect><rect x="7" y="6" width="2" height="2" fill="#7fd18a"></rect><rect x="3" y="8" width="5" height="1" fill="#7fd18a"></rect><rect x="5" y="9" width="2" height="2" fill="#7fd18a"></rect></svg></sc-if>
+<sc-if value="{{iStaff}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="3" y="1" width="6" height="2" fill="#3a4a80"></rect><rect x="2" y="3" width="8" height="1" fill="#10110c"></rect><rect x="5" y="1" width="2" height="1" fill="#f2c200"></rect><rect x="4" y="4" width="4" height="3" fill="#d9a77a"></rect><rect x="3" y="7" width="6" height="4" fill="#3a4a80"></rect><rect x="5" y="8" width="1" height="1" fill="#f2c200"></rect></svg></sc-if>
+<sc-if value="{{iCard}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="3" width="10" height="7" fill="#2f7d6d"></rect><rect x="1" y="3" width="10" height="1" fill="#24645a"></rect><rect x="1" y="7" width="10" height="1" fill="#e8b33a"></rect><rect x="2" y="4" width="2" height="2" fill="#d8c27a"></rect></svg></sc-if>
+<sc-if value="{{iHand}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="2" y="5" width="3" height="5" fill="#e6dfc0"></rect><rect x="5" y="3" width="1" height="6" fill="#e6dfc0"></rect><rect x="6" y="2" width="1" height="7" fill="#e6dfc0"></rect><rect x="7" y="3" width="1" height="6" fill="#e6dfc0"></rect><rect x="8" y="4" width="1" height="5" fill="#e6dfc0"></rect><rect x="3" y="10" width="5" height="1" fill="#e6dfc0"></rect><rect x="9" y="6" width="2" height="2" fill="#e8b33a"></rect></svg></sc-if>
+</div>
+<div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 9px solid {{bRing}}; margin-top: 3px"></div>
+<sc-if value="{{hintHold}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 6px; width: 40px; height: 8px; background: #2c2d21; box-shadow: 0 0 0 2px #070705; position: relative"><div class="blink" style="position: absolute; left: 0; top: 0; bottom: 0; width: 26px; background: #e8b33a"></div></div></sc-if>
+</div>
+</div>
+</sc-if>
+
+<!-- Moneda que se arrastra hasta la mano del vendedor -->
+<sc-if value="{{coinOn}}" hint-placeholder-val="{{ false }}">
+<div class="blink" style="position: absolute; left: {{chL}}; top: 591px; width: 40px; height: 40px; box-shadow: inset 0 0 0 3px #e8b33a; pointer-events: none; z-index: 960"></div>
+<svg aria-hidden="true" style="position: absolute; left: {{coinL}}; top: {{coinT}}; z-index: 961" width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="1" width="4" height="1" fill="#e8b33a"></rect><rect x="2" y="2" width="8" height="1" fill="#e8b33a"></rect><rect x="1" y="3" width="10" height="6" fill="#e8b33a"></rect><rect x="2" y="9" width="8" height="1" fill="#e8b33a"></rect><rect x="4" y="10" width="4" height="1" fill="#e8b33a"></rect><rect x="5" y="4" width="2" height="4" fill="#b88a20"></rect></svg>
+</sc-if>
+</div>
+
+<!-- Viñeta y destellos -->
+<div style="position: absolute; inset: 0; background: radial-gradient(ellipse at {{vigAt}}, rgba(0,0,0,0) {{vigIn}}, rgba(0,0,0,.62) 100%); pointer-events: none; z-index: 930"></div>
+<div style="position: absolute; inset: 0; background: radial-gradient(circle at {{flashAt}}, rgba(255,206,110,.55), rgba(255,206,110,0) 55%); opacity: {{warmOp}}; pointer-events: none; z-index: 931; mix-blend-mode: screen"></div>
+<div style="position: absolute; inset: 0; background: rgba(120,120,116,.5); opacity: {{grayOp}}; pointer-events: none; z-index: 931; mix-blend-mode: saturation"></div>
+
+<sc-if value="{{scanlines}}" hint-placeholder-val="{{ true }}"><div class="scan" style="position: absolute; inset: 0; z-index: 990"></div></sc-if>
+<sc-if value="{{ffOn}}" hint-placeholder-val="{{ false }}"><div class="vhs" style="position: absolute; inset: 0; background-color: rgba(30,40,60,.18); pointer-events: none; z-index: 991"></div></sc-if>
+
+<!-- HUD: reloj y cuánto falta para el andén de la H -->
+<div class="hud" style="position: absolute; left: 24px; top: 20px; padding: 12px 18px 14px 16px; display: flex; flex-direction: column; gap: 12px; pointer-events: none; z-index: 1000">
+<div style="display: flex; align-items: center; gap: 14px">
+<svg role="img" aria-label="Trabajo" width="30" height="30" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="1" width="4" height="1" fill="#bdb795"></rect><rect x="4" y="1" width="1" height="2" fill="#bdb795"></rect><rect x="7" y="1" width="1" height="2" fill="#bdb795"></rect><rect x="1" y="3" width="10" height="7" fill="#7a5a3a"></rect><rect x="1" y="6" width="10" height="1" fill="#5e4329"></rect><rect x="5" y="5" width="2" height="3" fill="#e8b33a"></rect></svg>
+<span class="{{clockCls}}" style="font-size: 48px; line-height: .8; color: {{timerColor}}; display: inline-block">{{clock}}</span>
+<sc-if value="{{ffOn}}" hint-placeholder-val="{{ false }}"><span class="blink" style="font-size: 30px; line-height: .8; color: #e05a4a">{{costTxt}}</span></sc-if>
+</div>
+<div role="img" aria-label="{{routeLabel}}" style="display: flex; align-items: center; gap: 10px">
+<div style="width: 26px; height: 26px; border-radius: 50%; background: #3bb3e6; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 13px; color: #10110c; box-shadow: 0 0 0 3px #070705">A</div>
+<div style="position: relative; width: 230px; height: 26px">
+<div style="position: absolute; left: 0; right: 0; top: 11px; height: 4px; background: #2c2d21"></div>
+<div style="position: absolute; left: 0; width: {{routePct}}; top: 11px; height: 4px; background: #e6dfc0"></div>
+<div style="position: absolute; left: 164px; top: 6px; width: 3px; height: 14px; background: #b8bab4"></div>
+<div style="position: absolute; left: {{routePos}}; top: 3px; width: 12px; height: 20px; margin-left: -6px; background: #3b70bc; box-shadow: 0 0 0 2px #070705, 0 0 0 4px #e6dfc0"></div>
+</div>
+<div style="width: 26px; height: 26px; border-radius: 50%; background: #f2c200; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 13px; color: #10110c; box-shadow: 0 0 0 3px #070705">H</div>
+<span style="font-size: 24px; line-height: 1; color: #bdb795; min-width: 64px">{{meters}}</span>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; zoom: 1.35; padding-top: 4px">
+<div class="{{msgCls}}" role="img" aria-label="{{msgLabel}}" style="position: relative; width: 22px; height: 32px; background: #1d1e18; box-shadow: 0 0 0 2px #070705, 0 0 0 4px #55574a; border-radius: 4px">
+<div style="position: absolute; left: 3px; top: 4px; right: 3px; bottom: 6px; background: {{msgScreen}}"></div>
+<sc-if value="{{msgOn}}" hint-placeholder-val="{{ true }}"><div style="position: absolute; left: 12px; top: -10px; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 10px; background: #e05a4a; box-shadow: 0 0 0 2px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 10px; color: #f4f0dc">{{msgN}}</div></sc-if>
+</div>
+<div class="{{battCls}}" role="img" aria-label="{{battLabel}}" style="display: flex; align-items: center; gap: 6px">
+<div style="position: relative; width: 30px; height: 16px; box-shadow: inset 0 0 0 2px #bdb795"><div style="position: absolute; left: 4px; top: 4px; bottom: 4px; width: {{battW}}; background: {{battC}}"></div><div style="position: absolute; right: -5px; top: 5px; width: 3px; height: 6px; background: #bdb795"></div></div>
+<span style="font-size: 22px; line-height: 1; color: {{battC}}">{{battTxt}}</span>
+</div>
+<div class="{{presCls}}" role="img" aria-label="{{presLabel}}" style="display: flex; align-items: center; gap: 8px">
+<div style="position: relative; width: 22px; height: 22px; border-radius: 50%; background: {{presC}}; box-shadow: 0 0 0 2px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 12px; color: #10110c">$<sc-if value="{{presLost}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; left: -4px; right: -4px; top: 9px; height: 4px; background: #e05a4a; transform: rotate(-40deg); box-shadow: 0 0 0 1px #070705"></div></sc-if></div>
+<div style="width: 76px; height: 8px; background: #2c2d21; box-shadow: 0 0 0 2px #070705"><div style="width: {{presW}}; height: 8px; background: {{presC}}"></div></div>
+</div>
+</div>
+</div>
+
+<!-- Flecha en el borde: hacia dónde está el oficial o el personal -->
+<sc-if value="{{edgeOn}}" hint-placeholder-val="{{ false }}">
+<div class="blink" style="position: absolute; left: {{edgeL}}; top: {{edgeT}}; z-index: 999; pointer-events: none; display: flex; align-items: center; gap: 6px; flex-direction: {{edgeDir}}">
+<svg aria-hidden="true" width="24" height="36" viewBox="0 0 6 9" shape-rendering="crispEdges" style="transform: scaleX({{edgeFlip}}); filter: drop-shadow(2px 2px 0 #070705)"><rect x="0" y="0" width="2" height="2" fill="#e8b33a"></rect><rect x="2" y="2" width="2" height="2" fill="#e8b33a"></rect><rect x="4" y="4" width="2" height="1" fill="#e8b33a"></rect><rect x="2" y="5" width="2" height="2" fill="#e8b33a"></rect><rect x="0" y="7" width="2" height="2" fill="#e8b33a"></rect></svg>
+<div style="width: 34px; height: 34px; background: #14150f; box-shadow: 0 0 0 3px #e8b33a, 0 0 0 5px #070705; display: flex; align-items: center; justify-content: center"><svg role="img" aria-label="Personal de la estación" width="26" height="26" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="3" y="1" width="6" height="2" fill="#3a4a80"></rect><rect x="2" y="3" width="8" height="1" fill="#10110c"></rect><rect x="5" y="1" width="2" height="1" fill="#f2c200"></rect><rect x="4" y="4" width="4" height="3" fill="#d9a77a"></rect><rect x="3" y="7" width="6" height="4" fill="#3a4a80"></rect></svg></div>
+</div>
+</sc-if>
+
+<!-- Notificación: grande, vibra, titila y tapa la vista (clic para cerrarla) -->
+<sc-if value="{{peekOn}}" hint-placeholder-val="{{ false }}">
+<div class="redpulse" style="position: absolute; inset: 0; box-shadow: inset 0 0 0 10px #e05a4a, inset 0 0 120px rgba(224,90,74,.7); pointer-events: none; z-index: 1000"></div>
+<div style="position: absolute; left: 340px; top: 150px; width: 600px; z-index: 1001" onPointerDown="{{dismissPeek}}">
+<div class="pop">
+<div class="buzz alarm" style="background: #10110c; border-radius: 14px; padding: 18px 22px; display: flex; align-items: center; gap: 20px; cursor: pointer">
+<div style="width: 76px; height: 76px; border-radius: 50%; flex-shrink: 0; background: {{ntAvBg}}; color: {{ntAvFg}}; box-shadow: 0 0 0 4px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 34px">{{ntAv}}</div>
+<div style="display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0">
+<div style="display: flex; justify-content: space-between; align-items: center"><span style="font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 15px; letter-spacing: 2px; color: #e6dfc0">{{ntWho}}</span><span style="font-size: 24px; color: #8f8c72">{{phoneTime}}</span></div>
+<div style="display: flex; align-items: center; gap: 14px; min-height: 56px">
+<sc-if value="{{ntIsText}}" hint-placeholder-val="{{ false }}"><span style="font-size: 64px; line-height: .8; color: {{ntColor}}">{{ntText}}</span></sc-if>
+<sc-if value="{{peekClock}}" hint-placeholder-val="{{ true }}"><svg role="img" aria-label="Un reloj" width="56" height="56" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="9" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="2" y="2" width="8" height="1" fill="#e05a4a"></rect><rect x="1" y="3" width="10" height="6" fill="#e05a4a"></rect><rect x="2" y="9" width="8" height="1" fill="#e05a4a"></rect><rect x="2" y="4" width="8" height="4" fill="#f4f0dc"></rect><rect x="3" y="3" width="6" height="1" fill="#f4f0dc"></rect><rect x="3" y="8" width="6" height="1" fill="#f4f0dc"></rect><rect x="6" y="3" width="1" height="3" fill="#10110c"></rect><rect x="6" y="6" width="2" height="1" fill="#10110c"></rect></svg></sc-if>
+<sc-if value="{{peekAngry}}" hint-placeholder-val="{{ false }}"><svg role="img" aria-label="Una cara enojada" width="56" height="56" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="1" width="4" height="1" fill="#e05a4a"></rect><rect x="2" y="2" width="8" height="1" fill="#e05a4a"></rect><rect x="1" y="3" width="10" height="6" fill="#e05a4a"></rect><rect x="2" y="9" width="8" height="1" fill="#e05a4a"></rect><rect x="4" y="10" width="4" height="1" fill="#e05a4a"></rect><rect x="3" y="4" width="2" height="1" fill="#10110c"></rect><rect x="5" y="5" width="1" height="1" fill="#10110c"></rect><rect x="7" y="4" width="2" height="1" fill="#10110c"></rect><rect x="6" y="5" width="1" height="1" fill="#10110c"></rect><rect x="4" y="8" width="4" height="1" fill="#10110c"></rect></svg></sc-if>
+<sc-if value="{{ntHeart}}" hint-placeholder-val="{{ false }}"><svg role="img" aria-label="Un corazón" width="56" height="56" viewBox="0 0 10 10" shape-rendering="crispEdges"><rect x="1" y="2" width="3" height="1" fill="#e05a4a"></rect><rect x="6" y="2" width="3" height="1" fill="#e05a4a"></rect><rect x="0" y="3" width="10" height="3" fill="#e05a4a"></rect><rect x="1" y="6" width="8" height="1" fill="#e05a4a"></rect><rect x="2" y="7" width="6" height="1" fill="#e05a4a"></rect><rect x="3" y="8" width="4" height="1" fill="#e05a4a"></rect><rect x="4" y="9" width="2" height="1" fill="#e05a4a"></rect></svg></sc-if>
+<sc-if value="{{ntCall}}" hint-placeholder-val="{{ false }}"><svg role="img" aria-label="Llamada perdida" class="blink" width="56" height="56" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="1" width="3" height="4" fill="#7fd18a"></rect><rect x="2" y="5" width="2" height="2" fill="#7fd18a"></rect><rect x="3" y="7" width="2" height="1" fill="#7fd18a"></rect><rect x="4" y="8" width="3" height="1" fill="#7fd18a"></rect><rect x="7" y="7" width="4" height="3" fill="#7fd18a"></rect><rect x="7" y="1" width="1" height="1" fill="#e05a4a"></rect><rect x="8" y="2" width="1" height="1" fill="#e05a4a"></rect><rect x="9" y="3" width="1" height="1" fill="#e05a4a"></rect><rect x="9" y="1" width="1" height="1" fill="#e05a4a"></rect><rect x="7" y="3" width="1" height="1" fill="#e05a4a"></rect></svg></sc-if>
+<sc-if value="{{ntBatt}}" hint-placeholder-val="{{ false }}"><svg role="img" aria-label="Batería baja" class="blink" width="64" height="36" viewBox="0 0 14 8" shape-rendering="crispEdges"><rect x="0" y="0" width="12" height="1" fill="#bdb795"></rect><rect x="0" y="7" width="12" height="1" fill="#bdb795"></rect><rect x="0" y="0" width="1" height="8" fill="#bdb795"></rect><rect x="11" y="0" width="1" height="8" fill="#bdb795"></rect><rect x="12" y="2" width="2" height="4" fill="#bdb795"></rect><rect x="2" y="2" width="2" height="4" fill="#e05a4a"></rect></svg></sc-if>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- Plano de la combinación: hay que trazar el camino con el mouse -->
+<sc-if value="{{traceOn}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; background: rgba(5,5,3,.55); z-index: 969; pointer-events: none"></div>
+<div style="position: absolute; left: 160px; top: 110px; width: 960px; height: 500px; background: #0f110d; box-shadow: 0 0 0 4px #3b3d2c, 0 0 0 8px #070705, 0 20px 60px rgba(0,0,0,.6); z-index: 970; transform: translateX({{trShake}}); pointer-events: none; overflow: hidden">
+<sc-for list="{{trLines}}" as="ln" hint-placeholder-count="10"><div class="seg" style="left: {{ln.l}}; top: {{ln.t}}; width: {{ln.w}}; transform: rotate({{ln.a}}); background: {{ln.c}}; opacity: {{ln.o}}"></div></sc-for>
+<sc-for list="{{trStops}}" as="st" hint-placeholder-count="12"><div style="position: absolute; left: {{st.l}}; top: {{st.t}}; width: 16px; height: 16px; margin: -8px 0 0 -8px; background: #0f110d; box-shadow: inset 0 0 0 4px {{st.c}}"></div></sc-for>
+<sc-for list="{{trTrail}}" as="tl" hint-placeholder-count="0"><div class="seg" style="left: {{tl.l}}; top: {{tl.t}}; width: {{tl.w}}; transform: rotate({{tl.a}}); background: #f4f0dc; height: 12px; margin-top: -2px; box-shadow: 0 0 12px rgba(244,240,220,.8)"></div></sc-for>
+<div class="blink" style="position: absolute; left: {{trNextL}}; top: {{trNextT}}; width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 3px solid #f4f0dc; border-radius: 50%; box-sizing: border-box"></div>
+<div style="position: absolute; left: 66px; top: 116px; width: 30px; height: 30px; border-radius: 50%; background: #3bb3e6; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 14px; color: #10110c; box-shadow: 0 0 0 3px #070705">A</div>
+<div style="position: absolute; left: 486px; top: 164px; width: 30px; height: 30px; border-radius: 50%; background: #f2c200; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 14px; color: #10110c; box-shadow: 0 0 0 3px #070705">H</div>
+<div style="position: absolute; left: 552px; top: 428px; width: 36px; height: 36px; background: #f2c200; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #070705"><svg role="img" aria-label="Trabajo" width="24" height="24" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="1" width="4" height="1" fill="#10110c"></rect><rect x="4" y="1" width="1" height="2" fill="#10110c"></rect><rect x="7" y="1" width="1" height="2" fill="#10110c"></rect><rect x="1" y="3" width="10" height="7" fill="#10110c"></rect><rect x="5" y="5" width="2" height="3" fill="#f2c200"></rect></svg></div>
+<div style="position: absolute; right: 22px; bottom: 18px; display: flex; align-items: center; gap: 10px">
+<svg aria-hidden="true" width="26" height="36" viewBox="0 0 8 11" shape-rendering="crispEdges"><rect x="0" y="0" width="8" height="11" fill="#070705"></rect><rect x="1" y="1" width="6" height="9" fill="#e6dfc0"></rect><rect x="1" y="1" width="3" height="4" fill="#e8b33a"></rect><rect x="4" y="1" width="1" height="4" fill="#070705"></rect></svg>
+<svg aria-hidden="true" width="60" height="20" viewBox="0 0 30 10" shape-rendering="crispEdges"><rect x="0" y="4" width="24" height="2" fill="#e6dfc0"></rect><rect x="24" y="2" width="2" height="6" fill="#e6dfc0"></rect><rect x="26" y="3" width="2" height="4" fill="#e6dfc0"></rect><rect x="28" y="4" width="2" height="2" fill="#e6dfc0"></rect></svg>
+</div>
+</div>
+</sc-if>
+
+<!-- Inicio: el celular con el recorrido y lo que falta para el subte -->
+<sc-if value="{{introOn}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; inset: 0; z-index: 1003">
+<dc-import name="Inicio" hint-size="1280px,720px"></dc-import>
+<div class="blink" style="position: absolute; left: 870px; top: 320px; display: flex; flex-direction: column; align-items: center; gap: 16px; pointer-events: none">
+<div style="display: flex; gap: 14px; align-items: flex-end">
+<div style="width: 92px; height: 32px; background: #e6dfc0; box-shadow: 0 0 0 3px #070705; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 7px; box-sizing: border-box"><div style="width: 58px; height: 5px; background: #10110c"></div></div>
+<svg role="img" aria-label="Clic" width="32" height="44" viewBox="0 0 8 11" shape-rendering="crispEdges"><rect x="0" y="0" width="8" height="11" fill="#070705"></rect><rect x="1" y="1" width="6" height="9" fill="#e6dfc0"></rect><rect x="1" y="1" width="3" height="4" fill="#e8b33a"></rect><rect x="4" y="1" width="1" height="4" fill="#070705"></rect></svg>
+</div>
+<svg role="img" aria-label="Guardar el celular y salir" width="40" height="28" viewBox="0 0 10 7" shape-rendering="crispEdges"><rect x="0" y="2" width="6" height="3" fill="#e6dfc0"></rect><rect x="6" y="0" width="1" height="7" fill="#e6dfc0"></rect><rect x="7" y="1" width="1" height="5" fill="#e6dfc0"></rect><rect x="8" y="2" width="1" height="3" fill="#e6dfc0"></rect><rect x="9" y="3" width="1" height="1" fill="#e6dfc0"></rect></svg>
+</div>
+</div>
+</sc-if>
+
+<!-- Finales -->
+<sc-if value="{{endLate}}" hint-placeholder-val="{{ false }}">
+<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalTarde" res="{{resStr}}" slip="{{slipStr}}" hint-size="1280px,720px"></dc-import></div>
+</sc-if>
+<sc-if value="{{endCancel}}" hint-placeholder-val="{{ false }}">
+<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalChoque" res="{{resStr}}" slip="{{slipStr}}" hint-size="1280px,720px"></dc-import></div>
+</sc-if>
+<sc-if value="{{ended}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; right: 32px; top: 28px; z-index: 1004"><button class="restart" onPointerDown="{{stopEv}}" onClick="{{restart}}"><span style="color: #10110c; background: #e6dfc0; padding: 1px 6px">R</span>OTRA VEZ</button></div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;sound&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;volume&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.35,&quot;min&quot;:0,&quot;max&quot;:1,&quot;step&quot;:0.05},&quot;scanlines&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;crowd&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:30,&quot;min&quot;:0,&quot;max&quot;:60},&quot;zoom&quot;:{&quot;editor&quot;:&quot;float&quot;,&quot;default&quot;:1.5,&quot;min&quot;:1,&quot;max&quot;:2,&quot;step&quot;:0.25},&quot;speed&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:230,&quot;min&quot;:100,&quot;max&quot;:360,&quot;unit&quot;:&quot;px/s&quot;},&quot;clockRate&quot;:{&quot;editor&quot;:&quot;float&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:20,&quot;step&quot;:1,&quot;unit&quot;:&quot;s de juego por s&quot;},&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:720}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.stageRef = (el) => { this.stage = el; };
+    this.loop = this.loop.bind(this);
+    this.SEG = 1280; this.W = 7 * 1280;
+    const B = (id) => '/_blob/' + id;
+    this.SEGS = [
+      { bg: 'assets/img/tramo0.png', glow: 'assets/img/luz0.png', fg: null, alt: 'Andén de la línea A, con afiches y grafitis frente a las vías' },
+      { bg: 'assets/img/tramo1.png', glow: 'assets/img/luz1.png', fg: null, alt: 'Pasillo de combinación con azulejos, carteles y grafitis' },
+      { bg: 'assets/img/tramo2.png', glow: 'assets/img/luz1.png', fg: null, alt: 'Pasillo con murales y escalera' },
+      { bg: 'assets/img/tramo3.png', glow: 'assets/img/luz1.png', fg: null, alt: 'Otro tramo del pasillo, más sucio' },
+      { bg: 'assets/img/tramo4.png', glow: 'assets/img/luz1.png', fg: null, alt: 'Hall con kiosco, informes y el ascensor' },
+      { bg: 'assets/img/tramo5.png', glow: 'assets/img/luz1.png', fg: null, alt: 'Fila de molinetes' },
+      { bg: 'assets/img/tramo6.png', glow: 'assets/img/luz0.png', fg: null, alt: 'Andén de la línea H' }
+    ];
+    this.IMG = { sleep1: 'assets/img/dormido1.png', sleep2: 'assets/img/dormido2.png', bin: 'assets/img/cesto.png', wet: 'assets/img/mojado.png' };
+    this.SRC = {
+      ambiente: 'assets/snd/ambiente.mp3', artista: 'assets/snd/artista.mp3', papel: 'assets/snd/papel.mp3',
+      puerta: 'assets/snd/puerta.mp3', timbre: 'assets/snd/timbre.mp3', tren: 'assets/snd/tren.mp3', ventiladores: 'assets/snd/ventiladores.mp3'
+    };
+    // avisos del celular según lo que queda de tiempo: muchos, y cada vez más seguidos
+    this.NOTIFS = [[575, 'subte'], [520, 'ask'], [470, 'group'], [420, 'batt'], [370, 'clock'], [320, 'mom'], [270, 'group'], [220, 'angry'], [170, 'call'], [120, 'angry'], [80, 'batt'], [40, 'call'], [0, 'late'], [-40, 'angry'], [-80, 'call'], [-120, 'late'], [-170, 'angry'], [-220, 'call'], [-280, 'late'], [-340, 'angry'], [-400, 'late'], [-480, 'call'], [-560, 'late']];
+    // plano de la combinación (coordenadas dentro del panel)
+    this.TPATH = [[90, 150], [250, 150], [310, 205], [470, 205], [470, 305], [570, 360], [570, 445]];
+    this.TLINES = [
+      { c: '#3bb3e6', p: [[30, 150], [90, 150]] }, { c: '#3bb3e6', p: [[470, 205], [630, 205], [700, 150], [930, 150]] },
+      { c: '#f2c200', p: [[470, 205], [470, 40]] }, { c: '#f2c200', p: [[570, 445], [570, 490]] },
+      { c: '#e05a4a', p: [[40, 90], [380, 90], [560, 60], [930, 60]] }, { c: '#9b6fc0', p: [[120, 480], [330, 300], [650, 300], [930, 430]] },
+      { c: '#5aa37a', p: [[40, 380], [300, 380], [400, 440], [930, 440]] }, { c: '#2f7dbf', p: [[780, 30], [780, 490]] }
+    ];
+    this.reset();
+  }
+
+  /* ================= estado ================= */
+  L(s, x) { return s * 1280 + x; }
+  reset() {
+    this.g = {
+      x: 110, y: 470, face: 1, left: 600, ff: 0, helps: 0, ignores: 0, res: Array(10).fill(null), phase: 'intro', t: 0, hold: false, keys: {},
+      alt: { last: null, n: 0, at: 0 }, moved: false, dist: 0, peekT: 0, peekKind: null, peeked: {}, notifQ: [], buzzT: 0, stopT: 0, warmT: 0, grayT: 0,
+      flashAt: { x: 640, y: 360 }, parts: [], focus: 0, bumpT: 0, squashT: 0, beatT: 0, walkTo: null, stuckT: 0, mouseHold: false,
+      trainX: 0, trainV: 0, trainT: 0, camX: 0, camY: 0, camInit: false, costT: 0, costTxt: '', stun: 0, slipT: 0, slips: 0, safeT: 0, shakeT: 0, mini: null, prog: 0,
+      act: -1, inRange: false, noticed: -1, flick: 0, flickT: 6, flyT: 9, flyers: [], passT: 15, passer: null, readerFlash: 0,
+      queued: false, cutT: 0, grumbleT: 0, gateWas: null, gateWasQ: null, sceneT: 0, glowT: 0, hopT: 0, hopI: -1, sadT: 0, sadI: -1, popT: 0, near: 0
+    };
+    this.setupWorld();
+  }
+  rng(seed) { let s = seed; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+  setupWorld() {
+    const g = this.g, L = (s, x) => this.L(s, x), r = this.rng(17);
+    g.dni = { x: L(0, 700), y: 640, vx: 60, vy: 30, rot: 0, kickT: 1, picked: false, ownerOn: false };
+    g.ask = { y: 620, moving: false, contact: false };
+    g.art = { coin: false };
+    g.trash = { up: false };
+    g.fight = { phase: 0, t: 0, ax: L(3, 880), bx: L(3, 930), y: 395, guard: null };
+    g.vend = { kid: false, kidDone: false, kx: L(4, 650), ky: 672 };
+    g.lift = { stage: 0, px: L(4, 1110), py: 345 };
+    g.off = { x: L(4, 300), y: 520, tx: L(4, 300), ty: 520, wait: 1, face: 1, moving: false, stuck: false };
+    g.sen = { x: L(5, 718) };
+    g.kid = { x: L(6, 380), y: 470, stage: 0, face: 1, t: 0, parent: null, moving: false };
+    g.guards = [{ x: L(5, 860), y: 560, face: -1 }, { x: L(6, 1060), y: 400, face: -1 }];
+    g.cleaner = { x: L(3, 160), y: 540, face: 1, dropT: 0 };
+    g.puddles = [];
+    for (let i = 0; i < 16; i++) g.puddles.push({ x: L(3, 160 + i * 24), y: 540 + Math.sin(i) * 6, t: 4 + i * 0.4 });
+    g.queue = [0, 1, 2].map((k) => ({ row: Math.floor(r() * 12), x: L(5, 660) - k * 36, y: 654, state: 'wait', moving: false, ph: r() * 6 }));
+    g.qSpawnT = 3;
+    this.makeCrowd();
+    this.makeHelpers();
+  }
+  makeCrowd() {
+    const g = this.g, L = (s, x) => this.L(s, x), r = this.rng(97);
+    const crowd = [];
+    const idle = [[0, 1000, 340], [0, 1180, 460], [0, 250, 610], [0, 420, 345], [0, 860, 350],
+      [1, 640, 330], [1, 460, 680], [1, 1180, 350], [2, 360, 345], [2, 200, 350], [2, 860, 345], [2, 300, 672],
+      [3, 1000, 350], [3, 1150, 620], [4, 200, 350], [4, 520, 340], [4, 330, 350], [4, 1000, 360], [5, 300, 340], [5, 930, 360], [5, 1110, 560], [5, 160, 470], [5, 420, 350],
+      [6, 100, 400], [6, 232, 385], [6, 496, 390], [6, 616, 430], [6, 742, 392], [6, 858, 415], [6, 985, 400], [6, 1198, 415], [6, 282, 515], [6, 928, 530], [6, 1140, 520]];
+    idle.forEach((p) => crowd.push({ row: Math.floor(r() * 12), x: L(p[0], p[1]), y: p[2], vx: 0, idle: true, ph: r() * 6, phone: r() < 0.5, react: 0 }));
+    // gente que filma la pelea con el celular
+    crowd.push({ row: 3, x: L(3, 760), y: 430, vx: 0, idle: true, ph: 0, phone: true, rec: true, react: 0 });
+    crowd.push({ row: 9, x: L(3, 1050), y: 440, vx: 0, idle: true, ph: 1, phone: true, rec: true, react: 0 });
+    const n = this.props.crowd ?? 30;
+    for (let i = 0; i < n; i++) {
+      const zoneB = r() < 0.12;
+      const x = zoneB ? L(5, 880) + r() * 1600 : r() * L(5, 460);
+      crowd.push({ row: Math.floor(r() * 12), x, y: 330 + r() * 350, vx: (r() < 0.6 ? 1 : -1) * (55 + r() * 70), idle: false, ph: r() * 6, zone: zoneB ? 1 : 0, react: 0 });
+    }
+    g.crowd = crowd;
+  }
+  /* otros pasajeros que también se cruzan con quien necesita algo: miran, prueban... y siguen */
+  makeHelpers() {
+    const r = this.rng(53);
+    const defs = [[0, 'look', 3], [1, 'look', 2], [2, 'shrug', 2], [3, 'listen', 1.5], [3, 'listen', 6, 1], [4, 'look', 2], [6, 'shrug', 2.5], [7, 'shrug', 2], [8, 'card', 1], [8, 'card', 6.5, 1], [8, 'card', 12, 2], [9, 'look', 3]];
+    this.g.helpers = defs.map((d) => ({ ev: d[0], kind: d[1], o: d[3] || 0, row: Math.floor(r() * 12), x: 0, y: 0, state: 'wait', t: d[2], face: 1, tag: null, moving: false, did: false }));
+  }
+
+  /* ================= audio ================= */
+  initAudio() {
+    if (this.A !== undefined) return;
+    this.A = null;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AC();
+      const master = ctx.createGain(); master.gain.value = this.masterVol(); master.connect(ctx.destination);
+      const ambF = ctx.createBiquadFilter(); ambF.type = 'lowpass'; ambF.frequency.value = 16000; ambF.Q.value = 0.4;
+      const ambG = ctx.createGain(); ambG.gain.value = 0; ambF.connect(ambG); ambG.connect(master);
+      const fanG = ctx.createGain(); fanG.gain.value = 0; fanG.connect(ambF);
+      const artF = ctx.createBiquadFilter(); artF.type = 'lowpass'; artF.frequency.value = 16000;
+      const artP = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+      const artG = ctx.createGain(); artG.gain.value = 0;
+      if (artP) { artF.connect(artP); artP.connect(artG); } else artF.connect(artG);
+      artG.connect(master);
+      const sfxG = ctx.createGain(); sfxG.gain.value = 1; sfxG.connect(master);
+      const el = (src, dest) => { const a = new Audio(src); a.loop = true; a.preload = 'auto'; try { ctx.createMediaElementSource(a).connect(dest); } catch (e) { a.volume = 0.12; } return a; };
+      const amb = el(this.SRC.ambiente, ambF);
+      const fan = el(this.SRC.ventiladores, fanG);
+      const art = el(this.SRC.artista, artF);
+      this.A = { ctx, master, ambF, ambG, fanG, artF, artP, artG, sfxG, amb, fan, art, buf: {} };
+      ['papel', 'puerta', 'timbre', 'tren'].forEach((n) => {
+        fetch(this.SRC[n]).then((r) => r.arrayBuffer()).then((b) => new Promise((res, rej) => ctx.decodeAudioData(b, res, rej))).then((buf) => { this.A.buf[n] = buf; }).catch(() => {});
+      });
+    } catch (e) { this.A = null; }
+  }
+  masterVol() { return this.props.sound === false ? 0 : (this.props.volume ?? 0.35); }
+  set(param, v, tc) { try { param.setTargetAtTime(v, this.A.ctx.currentTime, tc || 0.25); } catch (e) {} }
+  sfx(n, o) {
+    const A = this.A; if (!A || this.props.sound === false) return;
+    o = o || {};
+    const go = () => {
+      const buf = A.buf[n]; if (!buf) return;
+      try {
+        const s = A.ctx.createBufferSource(); s.buffer = buf; s.playbackRate.value = o.rate || 1;
+        const gn = A.ctx.createGain(); gn.gain.value = o.vol ?? 1;
+        let node = gn;
+        if (o.pan && A.ctx.createStereoPanner) { const p = A.ctx.createStereoPanner(); p.pan.value = o.pan; gn.connect(p); node = p; }
+        s.connect(gn); node.connect(A.sfxG); s.start();
+      } catch (e) {}
+    };
+    if (o.delay) setTimeout(go, o.delay); else go();
+  }
+  tone(type, f0, f1, dur, vol, filt) {
+    const A = this.A; if (!A || this.props.sound === false) return;
+    try {
+      const ctx = A.ctx, t = ctx.currentTime;
+      const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, t);
+      if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      const gn = ctx.createGain(); gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(vol, t + 0.012); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      let n = o;
+      if (filt) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = filt; o.connect(f); n = f; }
+      n.connect(gn); gn.connect(A.sfxG); o.start(t); o.stop(t + dur + 0.05);
+    } catch (e) {}
+  }
+  noise(dur, vol, f0, f1, type) {
+    const A = this.A; if (!A || this.props.sound === false) return;
+    try {
+      const ctx = A.ctx, t = ctx.currentTime;
+      const len = Math.floor(ctx.sampleRate * dur), b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      const s = ctx.createBufferSource(); s.buffer = b;
+      const f = ctx.createBiquadFilter(); f.type = type || 'bandpass'; f.Q.value = 1.2; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      const gn = ctx.createGain(); gn.gain.setValueAtTime(vol, t); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(gn); gn.connect(A.sfxG); s.start(t);
+    } catch (e) {}
+  }
+  note(f, t0, dur, vol, type, cut) {
+    const A = this.A; if (!A || this.props.sound === false) return;
+    try {
+      const ctx = A.ctx, t = ctx.currentTime + t0;
+      const o = ctx.createOscillator(); o.type = type || 'square'; o.frequency.setValueAtTime(f, t);
+      const fl = ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = cut || 2400;
+      const gn = ctx.createGain(); gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(vol, t + 0.008); gn.gain.setValueAtTime(vol, t + dur * 0.6); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(fl); fl.connect(gn); gn.connect(A.sfxG); o.start(t); o.stop(t + dur + 0.05);
+    } catch (e) {}
+  }
+  good() {
+    const scale = [523.25, 587.33, 659.25, 698.46, 783.99, 880.0, 987.77, 1046.5, 1174.7, 1318.5];
+    const root = scale[Math.min(9, Math.max(0, this.g.helps - 1))];
+    [1, 1.25, 1.5].forEach((m, i) => this.note(root * m, i * 0.07, 0.11, 0.05, 'square', 2600));
+    this.note(root * 2, 0.21, 0.42, 0.045, 'square', 2200);
+    this.note(root / 2, 0, 0.5, 0.06, 'triangle', 1200);
+  }
+  bad() {
+    this.note(311.13, 0, 0.16, 0.05, 'square', 900);
+    this.note(233.08, 0.15, 0.34, 0.05, 'square', 700);
+    this.note(116.54, 0.15, 0.4, 0.06, 'triangle', 500);
+    this.noise(0.12, 0.06, 260, 120, 'lowpass');
+  }
+  oops() { this.note(146.83, 0, 0.09, 0.05, 'square', 800); this.note(138.59, 0.08, 0.12, 0.04, 'square', 700); }
+  heartbeat(k) { this.tone('sine', 78, 48, 0.16, 0.05 + 0.22 * k, 300); setTimeout(() => this.tone('sine', 70, 44, 0.14, 0.03 + 0.14 * k, 300), 170); }
+  chime() { this.note(987.77, 0, 0.09, 0.03, 'square', 3000); this.note(1318.5, 0.08, 0.2, 0.025, 'square', 3000); }
+  tick() { this.noise(0.04, 0.18, 3200, 1800, 'bandpass'); }
+  vibrate() { [0, 140, 280, 420, 560].forEach((d) => setTimeout(() => this.tone('square', 150, 140, 0.1, 0.09, 300), d)); }
+  ding() { this.note(1760, 0, 0.12, 0.07, 'square', 4000); this.note(2349, 0.1, 0.25, 0.06, 'square', 4000); }
+  whoosh() { this.noise(0.55, 0.07, 400, 2600, 'bandpass'); }
+  bump() { this.noise(0.08, 0.08, 300, 160, 'lowpass'); }
+  siren() { for (let i = 0; i < 6; i++) this.note(i % 2 ? 660 : 880, i * 0.22, 0.2, 0.05, 'square', 2400); }
+  slipSnd() { this.tone('sine', 1400, 300, 0.25, 0.08, 4000); setTimeout(() => this.noise(0.22, 0.2, 220, 80, 'lowpass'), 220); }
+  grumble() { for (let i = 0; i < 4; i++) this.note(110 + Math.random() * 90, i * 0.07, 0.07, 0.05, 'sawtooth', 700); this.noise(0.25, 0.05, 500, 300); }
+  thump() { this.noise(0.09, 0.12, 180, 90, 'lowpass'); }
+  holdStart() {
+    const A = this.A; if (!A || this.props.sound === false || this.holdOsc) return;
+    try {
+      const o = A.ctx.createOscillator(), gn = A.ctx.createGain(), f = A.ctx.createBiquadFilter();
+      o.type = 'triangle'; o.frequency.value = 280; f.type = 'lowpass'; f.frequency.value = 1400; gn.gain.value = 0;
+      o.connect(f); f.connect(gn); gn.connect(A.sfxG); o.start();
+      this.set(gn.gain, 0.06, 0.05);
+      this.holdOsc = { o, gn };
+    } catch (e) {}
+  }
+  holdSet(p) { if (this.holdOsc) this.set(this.holdOsc.o.frequency, 280 + p * 520, 0.05); }
+  holdStop() { const h = this.holdOsc; if (!h) return; this.holdOsc = null; try { this.set(h.gn.gain, 0.0001, 0.04); h.o.stop(this.A.ctx.currentTime + 0.3); } catch (e) {} }
+  unlock() {
+    const g = this.g;
+    this.initAudio();
+    const A = this.A;
+    if (A) {
+      try { if (A.ctx.state === 'suspended') A.ctx.resume(); } catch (e) {}
+      [A.amb, A.fan, A.art].forEach((a) => { if (a.paused) a.play().catch(() => {}); });
+    }
+    if (g.phase === 'intro') {
+      g.phase = 'play';
+      this.sfx('timbre', { vol: 0.7 }); this.sfx('puerta', { delay: 2300, vol: 0.8 }); this.sfx('tren', { delay: 2900, vol: 0.7, pan: -0.4 });
+    }
+  }
+  mix() {
+    const A = this.A; if (!A) return;
+    const g = this.g;
+    this.set(A.master.gain, this.masterVol(), 0.1);
+    const ended = g.phase === 'end';
+    let amb = 0.32 * (1 + g.ignores * 0.12) * (1 - 0.6 * g.focus);
+    if (g.warmT > 0) amb *= 0.55;
+    if (ended) amb = g.helps >= 5 ? 0.18 : 0.55;
+    this.set(A.ambG.gain, amb, 0.35);
+    let cut = 16000 - 15000 * g.focus;
+    if (g.peekT > 2.4) cut = Math.min(cut, 1500);
+    if (g.stun > 0) cut = Math.min(cut, 900);
+    if (ended && g.helps < 5) cut = 1400;
+    this.set(A.ambF.frequency, Math.max(500, cut), 0.2);
+    const s = Math.floor(g.x / 1280);
+    this.set(A.fanG.gain, ended ? 0.15 : (s >= 1 && s <= 3 ? 0.4 : 0.25), 0.5);
+    let art = 0, pan = 0, acut = 16000;
+    const ax = this.L(2, 590);
+    if (!ended && Math.abs(g.x - ax) < 1400) {
+      const d = this.dist(g.x, g.y, ax, 330);
+      art = Math.max(0, 1 - d / 1100) * 0.95;
+      pan = Math.max(-1, Math.min(1, (ax - g.x) / 500));
+      if (g.res[3] === 'ignore') { art *= 0.3; acut = 700; }
+      if (g.res[3] === 'help') art = Math.max(art, 0.5 * Math.max(0, 1 - d / 1600));
+    }
+    this.set(A.artG.gain, art, 0.25);
+    if (A.artP) this.set(A.artP.pan, pan, 0.15);
+    this.set(A.artF.frequency, acut, 0.6);
+    try { A.art.playbackRate = g.res[3] === 'ignore' ? 0.86 : 1; } catch (e) {}
+  }
+
+  /* ================= ciclo ================= */
+  componentDidMount() {
+    this.last = performance.now();
+    this.raf = requestAnimationFrame(this.loop);
+    setTimeout(() => this.focus(), 50);
+  }
+  componentWillUnmount() {
+    cancelAnimationFrame(this.raf);
+    this.holdStop();
+    if (this.A) { [this.A.amb, this.A.fan, this.A.art].forEach((a) => { try { a.pause(); } catch (e) {} }); try { this.A.ctx.close(); } catch (e) {} }
+  }
+  focus() { try { this.stage && this.stage.focus({ preventScroll: true }); } catch (e) {} }
+  loop(now) {
+    const raw = Math.min(0.5, Math.max(0, (now - this.last) / 1000));
+    this.last = now;
+    for (let rest = raw; rest > 0.0001; rest -= 0.05) this.update(Math.min(0.05, rest));
+    this.mix();
+    this.forceUpdate();
+    this.raf = requestAnimationFrame(this.loop);
+  }
+  dist(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+  Z() { return this.props.zoom ?? 1.5; }
+  viewW() { return 1280 / this.Z(); }
+  visible(x, pad) { return Math.abs(x - this.g.camX) < this.viewW() / 2 + (pad || 60); }
+  gateOpen() { return (this.g.t % 2.4) < 1.0; }
+
+  /* ---- colisiones: la gente no se atraviesa ---- */
+  bodies() {
+    const g = this.g, b = [], L = (s, x) => this.L(s, x);
+    const add = (x, y, rx, ry) => b.push({ x, y, rx: rx || 20, ry: ry || 9 });
+    g.crowd.forEach((c) => add(c.x, c.y));
+    g.queue.forEach((q) => { if (q.state === 'wait') add(q.x, q.y); });
+    add(L(2, 590), 330); add(L(4, 720), 655); add(g.lift.px, g.lift.py, 22, 10);
+    add(g.off.x, g.off.y); g.guards.forEach((q) => add(q.x, q.y));
+    if (g.fight.phase < 2) { add(g.fight.ax, g.fight.y); add(g.fight.bx, g.fight.y); }
+    add(L(1, 150), 338, 54, 12); add(L(2, 1100), 352, 34, 10); add(g.cleaner.x, g.cleaner.y);
+    if (g.kid.stage === 0) add(g.kid.x, g.kid.y, 16, 8);
+    return b;
+  }
+  statics() {
+    const L = (s, x) => this.L(s, x);
+    return [[L(0, 448), L(0, 588), 590, 648], [L(0, 832), L(0, 872), 578, 630], [L(6, 448), L(6, 588), 590, 648], [L(6, 832), L(6, 872), 578, 630]];
+  }
+  free(x, y, px, py) {
+    const g = this.g, L = (s, x) => this.L(s, x);
+    for (const o of this.statics()) if (x > o[0] - 12 && x < o[1] + 12 && y > o[2] && y < o[3] + 6) return false;
+    // quien pregunta se te pone adelante
+    if (g.res[2] === null && x > L(1, 930) && x < L(1, 1045) && Math.abs(y - g.ask.y) < 44) return false;
+    // la fila de molinetes: solo se pasa por un carril abierto
+    if (x > L(5, 672) && x < L(5, 768)) {
+      const lane1 = Math.abs(y - 410) < 16 && g.res[8] === 'help' && g.sen.x > L(5, 760);
+      const lane3 = Math.abs(y - 654) < 16 && this.gateOpen();
+      if (!lane1 && !lane3) return false;
+    }
+    // la gente: si ya estás encimado, solo podés alejarte
+    for (const b of (this.body || [])) {
+      if (Math.abs(x - b.x) < b.rx && Math.abs(y - b.y) < b.ry) {
+        const before = Math.abs(px - b.x) / b.rx + Math.abs(py - b.y) / b.ry;
+        const after = Math.abs(x - b.x) / b.rx + Math.abs(y - b.y) / b.ry;
+        if (after < before) return false;
+      }
+    }
+    return true;
+  }
+
+  burst(x, y) {
+    const cols = ['#e8b33a', '#f8e7a0', '#c9d97a', '#ffffff'];
+    for (let i = 0; i < 18; i++) {
+      const a = Math.random() * Math.PI * 2, v = 70 + Math.random() * 130;
+      this.g.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 100, life: 0.9 + Math.random() * 0.4, t: 0, s: Math.random() < 0.5 ? 3 : 6, c: cols[i % cols.length] });
+    }
+  }
+  help(i) {
+    const g = this.g;
+    if (g.res[i]) return;
+    g.res[i] = 'help'; g.helps++; g.ff += 120; g.costT = 1.7; g.costTxt = '-2:00';
+    const t = this.target(i, true);
+    g.stopT = 0.11; g.warmT = 0.9; g.glowT = 1.8; g.hopT = 0.45; g.hopI = i; g.flashAt = { x: t.x, y: t.y - 30 };
+    this.burst(t.x, t.y - 40);
+    g.mini = null; g.prog = 0; this.holdStop();
+    if (i === 6) { g.vend.kid = false; g.vend.kidDone = true; }
+    this.good();
+  }
+  ignore(i) {
+    const g = this.g;
+    if (g.res[i]) return;
+    g.res[i] = 'ignore'; g.ignores++; g.grayT = 0.8; g.shakeT = 0.18; g.sadT = 1.8; g.sadI = i;
+    if (g.act === i) { g.mini = null; g.prog = 0; }
+    this.holdStop();
+    if (i === 6) { g.vend.kid = false; g.vend.kidDone = true; }
+    if (i === 9 && g.kid.stage === 1) g.kid.stage = 0;
+    this.bad();
+  }
+  /* dónde está cada situación y desde dónde se actúa */
+  target(i, force) {
+    const g = this.g, L = (s, x) => this.L(s, x);
+    if (g.res[i] && !force) return null;
+    switch (i) {
+      case 0: return g.dni.picked ? { x: L(0, 1120), y: 640 } : { x: g.dni.x, y: g.dni.y, obj: true };
+      case 1: return { x: L(1, 150), y: 338, obj: true };
+      case 2: return { x: L(1, 985), y: g.ask.y };
+      case 3: return { x: L(2, 590), y: 330 };
+      case 4: return { x: L(2, 1080), y: 352 };
+      case 5: return { x: L(3, 640), y: 262, obj: true };
+      case 6: return { x: L(4, 720), y: 655 };
+      case 7: return g.lift.stage === 1 ? { x: g.off.x, y: g.off.y } : { x: g.lift.px, y: g.lift.py };
+      case 8: return { x: g.sen.x, y: 410 };
+      case 9: return { x: g.kid.x, y: g.kid.y, kid: true };
+    }
+    return null;
+  }
+  approach(i) {
+    const g = this.g, L = (s, x) => this.L(s, x);
+    switch (i) {
+      case 0: return g.dni.picked ? { x: L(0, 1076), y: 640 } : { x: g.dni.x, y: g.dni.y };
+      case 1: return { x: L(1, 250), y: 362 };
+      case 2: return { x: L(1, 900), y: g.ask.y };
+      case 3: return { x: L(2, 560), y: 380 };
+      case 4: return { x: L(2, 1030), y: 392 };
+      case 5: return { x: L(3, 640), y: 340 };
+      case 6: return { x: L(4, 676), y: 650 };
+      case 7: return g.lift.stage === 1 ? { x: g.off.x - 50, y: g.off.y } : { x: g.lift.px - 60, y: g.lift.py + 20 };
+      case 8: return { x: L(5, 650), y: 410 };
+      case 9: return { x: g.kid.x - 50, y: g.kid.y };
+    }
+    return null;
+  }
+  range(i) { return [70, 130, 80, 160, 110, 90, 150, 100, 110, 90][i]; }
+  holdDur(i) { return { 0: 0.9, 1: 2.2, 4: 1.6, 5: 1.4, 8: 1.8, 9: 1.0 }[i]; }
+
+  pointerXY(e) {
+    const r = this.stage.getBoundingClientRect(), k = r.width / 1280;
+    const sx = (e.clientX - r.left) / k, sy = (e.clientY - r.top) / k, Z = this.Z();
+    return { sx, sy, x: this.g.camX + (sx - 640) / Z, y: this.g.camY + (sy - 360) / Z };
+  }
+  pointer(e) {
+    const g = this.g;
+    this.unlock(); this.focus();
+    if (g.phase !== 'play' || !this.stage) return;
+    const { sx, sy, x, y } = this.pointerXY(e);
+    const m = g.mini;
+    if (m && m.type === 'trace') { this.traceDown(sx - 160, sy - 110); return; }
+    if (m && m.type === 'coin') { m.cx = x; m.cy = y; this.press(); return; }
+    if (m && m.type === 'rh') { this.press(); return; }
+    if (g.stun > 0) return;
+    // amague: clics rápidos sobre tu propio personaje
+    if (((g.act === 2 && g.ask.contact) || (g.act === 6 && g.vend.kid)) && Math.hypot(x - g.x, y - (g.y - 36)) < 46) {
+      this.alternate(g.alt.last === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft');
+      return;
+    }
+    const i = g.act;
+    const t = i >= 0 ? this.target(i) : null;
+    if (t && Math.hypot(x - t.x, y - (t.y - (t.obj ? 0 : 36))) < 70) {
+      g.hold = true; g.mouseHold = true;
+      if (g.inRange) this.press();
+      const a = this.approach(i);
+      if (a && Math.hypot(a.x - g.x, a.y - g.y) > 10) g.walkTo = a;
+      return;
+    }
+    const who = g.crowd.find((c) => Math.abs(c.x - x) < 22 && y > c.y - 78 && y < c.y + 6);
+    if (who && this.dist(who.x, who.y, g.x, g.y) < 160) { who.react = 1.3; who.rtag = 'q'; this.note(660, 0, 0.06, 0.02, 'square', 2000); }
+    g.walkTo = { x: Math.min(this.W - 30, Math.max(30, x)), y: Math.min(688, Math.max(318, y)) };
+  }
+  pointerMove(e) {
+    const g = this.g, m = g.mini;
+    if (!m || m.type !== 'trace' || !m.drag || !this.stage) return;
+    const { sx, sy } = this.pointerXY(e);
+    this.traceMove(sx - 160, sy - 110);
+  }
+  pointerUp() {
+    const g = this.g;
+    if (g.mouseHold) { g.hold = false; g.mouseHold = false; }
+    const m = g.mini;
+    if (m && m.type === 'trace' && m.drag) { m.drag = false; if (m.step < this.TPATH.length - 1) this.traceFail(); }
+  }
+  /* ---- plano con el mouse: arrastrar por la línea correcta sin salirse ---- */
+  traceDown(px, py) {
+    const m = this.g.mini, n = this.TPATH[m.step];
+    if (Math.hypot(px - n[0], py - n[1]) < 26) { m.drag = true; m.cur = [px, py]; }
+  }
+  traceMove(px, py) {
+    const m = this.g.mini, P = this.TPATH;
+    if (m.step >= P.length - 1) return;
+    const a = P[m.step], b = P[m.step + 1];
+    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
+    let t = ((px - a[0]) * dx + (py - a[1]) * dy) / (len * len);
+    t = Math.max(0, Math.min(1, t));
+    const qx = a[0] + dx * t, qy = a[1] + dy * t;
+    const off = Math.hypot(px - qx, py - qy);
+    if (off > 22 && Math.hypot(px - a[0], py - a[1]) > 22) { this.traceFail(); return; }
+    m.cur = [qx, qy];
+    if (Math.hypot(px - b[0], py - b[1]) < 16) this.traceStep();
+  }
+  traceStep() {
+    const m = this.g.mini;
+    m.step++; m.cur = this.TPATH[m.step];
+    this.sfx('papel', { rate: 0.9 + m.step * 0.1 });
+    this.note([392, 440, 493.88, 523.25, 587.33, 659.25][m.step - 1] || 659.25, 0, 0.12, 0.045, 'square', 2600);
+    if (m.step >= this.TPATH.length - 1) this.help(2);
+  }
+  traceFail() {
+    const m = this.g.mini;
+    if (!m) return;
+    m.step = 0; m.drag = false; m.cur = null; m.shake = 0.3;
+    this.oops();
+  }
+
+  update(dt) {
+    const g = this.g;
+    g.t += dt;
+    g.parts = g.parts.filter((p) => (p.t += dt) < p.life);
+    g.parts.forEach((p) => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 380 * dt; });
+    ['warmT', 'grayT', 'glowT', 'hopT', 'squashT', 'bumpT', 'popT', 'costT', 'sadT', 'readerFlash', 'safeT', 'cutT', 'slipT'].forEach((k) => { if (g[k] > 0) g[k] -= dt; });
+    if (g.mini && g.mini.shake > 0) g.mini.shake -= dt;
+    if (g.stopT > 0) { g.stopT -= dt; return; }
+    this.body = this.bodies();
+    this.updateCrowd(dt);
+    this.updateHelpers(dt);
+    this.updateQueue(dt);
+    this.updateCam(dt);
+    if (g.phase === 'end' || g.phase === 'intro') return;
+    this.indicators(dt);
+    if (g.trainX < 1500) {
+      g.trainT += dt;
+      if (g.trainT > 2.6) { g.trainV = Math.min(900, g.trainV + 220 * dt); g.trainX += g.trainV * dt; }
+      else if (g.trainT > 2.3) g.shakeT = Math.max(g.shakeT, 0.05);
+    }
+    if (g.ff > 0) { const d = Math.min(g.ff, 160 * dt); g.left -= d; g.ff -= d; }
+    else g.left -= (this.props.clockRate ?? 5) * dt;
+    this.NOTIFS.forEach(([th, kind]) => { if (g.left <= th && !g.peeked[th]) { g.peeked[th] = true; g.notifQ.push(kind); } });
+    g.peekT -= dt;
+    if (g.peekT <= -0.4 && g.notifQ.length) { g.unread = (g.unread || 0) + (g.peekKind === 'subte' ? 0 : 1 + Math.floor(Math.random() * 3)); g.newT = 1.2; g.peekKind = g.notifQ.shift(); g.peekT = 3.4; g.buzzT = 0; this.ding(); g.shakeT = Math.max(g.shakeT, 0.35); }
+    if (g.peekT > 0) { g.buzzT -= dt; if (g.buzzT <= 0) { g.buzzT = 0.75; this.vibrate(); } }
+    if (g.shakeT > 0) g.shakeT -= dt;
+    // movimiento
+    const k = g.keys;
+    let dx = (k.ArrowRight ? 1 : 0) - (k.ArrowLeft ? 1 : 0);
+    let dy = (k.ArrowDown ? 1 : 0) - (k.ArrowUp ? 1 : 0);
+    g.sceneT += dt;
+    if (g.stun > 0) { g.stun -= dt; dx = dy = 0; g.walkTo = null; }
+    if (dx || dy) g.walkTo = null;
+    else if (g.walkTo && !g.mini) {
+      let aim = g.walkTo, wait = false;
+      const L5 = this.L(5, 0);
+      // cruzar los molinetes por un carril
+      if (g.walkTo.x > L5 + 768 && g.x < L5 + 770 && g.x > L5 + 400) {
+        const ly = g.res[8] === 'help' && g.sen.x > L5 + 760 ? 410 : 654;
+        if (Math.abs(g.y - ly) > 6 && g.x < L5 + 664) aim = { x: Math.min(Math.max(g.x, L5 + 560), L5 + 652), y: ly };
+        else { aim = { x: L5 + 790, y: ly }; if (ly === 654 && !this.gateOpen() && g.x > L5 + 630 && g.x < L5 + 674) wait = true; }
+      }
+      const wx = aim.x - g.x, wy = aim.y - g.y, wd = Math.hypot(wx, wy);
+      if (aim === g.walkTo && wd < 6) g.walkTo = null; else if (!wait && wd > 0.5) { dx = wx / wd; dy = wy / wd; }
+    }
+    const px0 = g.x, py0 = g.y;
+    g.moving = false;
+    if (g.mini) this.updateMini(dt, dx, dy);
+    else if (dx || dy) {
+      const len = Math.hypot(dx, dy);
+      const sp = (this.props.speed ?? 230) * dt * (g.vend.kid ? 0.3 : 1);
+      const nx = Math.min(this.W - 20, Math.max(20, g.x + (dx / len) * sp));
+      const ny = Math.min(688, Math.max(318, g.y + (dy / len) * sp));
+      if (this.free(nx, ny, g.x, g.y)) { g.x = nx; g.y = ny; }
+      else if (this.free(nx, g.y, g.x, g.y)) g.x = nx;
+      else if (this.free(g.x, ny, g.x, g.y)) g.y = ny;
+      else if (g.walkTo) { // rodear a quien está en el camino
+        const side = (Math.floor(g.t * 0.5) % 2 ? 1 : -1);
+        if (this.free(g.x, g.y + side * sp, g.x, g.y)) g.y = Math.min(688, Math.max(318, g.y + side * sp));
+      }
+      if (g.x === px0 && g.y === py0 && g.bumpT <= 0) {
+        g.bumpT = 0.5; g.squashT = 0.12; this.bump();
+        const c = g.crowd.find((q) => Math.abs(nx - q.x) < 24 && Math.abs(ny - q.y) < 13);
+        if (c) { c.react = 0.9; c.rtag = 'ex'; }
+      }
+      if (Math.abs(dx) > 0.2) g.face = Math.sign(dx);
+      g.moving = g.x !== px0 || g.y !== py0;
+      if (g.moving) { g.moved = true; g.dist += Math.hypot(g.x - px0, g.y - py0); }
+      if (g.walkTo) { if (Math.hypot(g.x - px0, g.y - py0) < 0.3) { g.stuckT += dt; if (g.stuckT > 0.6) { g.walkTo = null; g.stuckT = 0; } } else g.stuckT = 0; }
+    }
+    this.wetLogic(dt);
+    this.events(dt);
+    const want = (g.mini || (g.hold && g.prog > 0) || (g.inRange && g.act >= 0)) ? 1 : 0;
+    g.focus += (want - g.focus) * Math.min(1, dt * 4);
+    const tgt = g.act >= 0 ? this.target(g.act) : null;
+    if (tgt && !g.mini) {
+      const d = this.dist(g.x, g.y, tgt.x, tgt.y);
+      g.near = Math.max(0, 1 - d / 520);
+      g.beatT -= dt;
+      if (g.near > 0.05 && g.beatT <= 0) { g.beatT = 1.6 - g.near * 0.6; this.heartbeat(g.near); }
+      if (g.inRange && g.noticed !== g.act) { g.noticed = g.act; this.chime(); }
+    } else g.near = 0;
+    const L5 = this.L(5, 0);
+    const o = this.gateOpen();
+    if (g.gateWas !== null && o !== g.gateWas && Math.abs(g.x - (L5 + 720)) < 500) this.sfx('puerta', { rate: o ? 1.6 : 1.35, vol: 0.16, pan: 0.2 });
+    g.gateWas = o;
+    // fin del recorrido: llegaste al andén de la H
+    if (g.x >= this.W - 90) {
+      for (let i = 0; i < 10; i++) if (!g.res[i]) this.ignore(i);
+      g.phase = 'end'; g.mini = null; this.holdStop();
+      if (g.helps >= 5) { this.sfx('timbre', { vol: 0.7 }); this.sfx('puerta', { delay: 2300 }); this.sfx('tren', { delay: 2900, vol: 0.8 }); }
+      else { this.bad(); this.noise(1.6, 0.05, 900, 200, 'lowpass'); }
+    }
+  }
+  updateCam(dt) {
+    const g = this.g, vw = this.viewW(), vh = 720 / this.Z();
+    const tx = Math.min(this.W - vw / 2, Math.max(vw / 2, g.x + g.face * 70));
+    const ty = Math.min(720 - vh / 2, Math.max(vh / 2, g.y - 80));
+    if (!g.camInit) { g.camX = tx; g.camY = ty; g.camInit = true; return; }
+    g.camX += (tx - g.camX) * Math.min(1, dt * 3.2);
+    g.camY += (ty - g.camY) * Math.min(1, dt * 3.2);
+  }
+  /* indicadores que molestan: mensajes sin leer, batería, presentismo */
+  indicators(dt) {
+    const g = this.g;
+    if (g.newT > 0) g.newT -= dt;
+    g.batt = Math.max(3, 23 - Math.floor((600 - g.left) / 40));
+    if (g.batt !== g.battWas) { if (g.battWas && g.batt <= 10) this.tone('square', 900, 900, 0.06, 0.04, 3000); g.battWas = g.batt; }
+    const lost = g.left <= 0;
+    if (lost && !g.lostShown) { g.lostShown = true; g.lostT = 2.5; this.bad(); g.shakeT = 0.4; }
+    if (g.lostT > 0) g.lostT -= dt;
+  }
+  /* piso mojado: la persona que limpia deja una franja; si la pisás, te caés */
+  wetLogic(dt) {
+    const g = this.g, c = g.cleaner, L3 = this.L(3, 0);
+    c.x += c.face * 42 * dt;
+    if (c.x > L3 + 540) c.face = -1;
+    if (c.x < L3 + 140) c.face = 1;
+    c.y = 540 + Math.sin(g.t * 0.7) * 10;
+    c.dropT -= dt;
+    if (c.dropT <= 0) { c.dropT = 0.28; g.puddles.push({ x: c.x + c.face * 22, y: c.y + 4, t: 0 }); }
+    g.puddles = g.puddles.filter((p) => (p.t += dt) < 18);
+    if (g.stun <= 0 && g.safeT <= 0 && g.moving && !g.mini) {
+      const wet = g.puddles.some((p) => p.t < 15 && ((g.x - p.x) / 30) ** 2 + ((g.y - p.y) / 13) ** 2 < 1);
+      if (wet) {
+        g.stun = 1.5; g.slipT = 1.5; g.safeT = 3.2; g.slips++; g.ff += 30; g.costT = 1.7; g.costTxt = '-0:30';
+        g.shakeT = 0.35; g.walkTo = null; g.hold = false; this.holdStop(); this.slipSnd();
+        g.crowd.forEach((q) => { if (this.dist(q.x, q.y, g.x, g.y) < 260) { q.react = 1.6; q.rtag = 'ex'; } });
+      }
+    }
+  }
+  updateCrowd(dt) {
+    const g = this.g, L5 = this.L(5, 0);
+    const zones = [[0, L5 + 470], [L5 + 870, this.W]];
+    g.crowd.forEach((c) => {
+      if (c.react > 0) c.react -= dt;
+      if (c.idle) return;
+      let vx = c.react > 0 ? 0 : c.vx;
+      // abrir paso: no te atraviesan, se corren
+      const ahead = c.x + vx * 0.35;
+      if (Math.abs(ahead - g.x) < 30 && Math.abs(c.y - g.y) < 16) { c.y += (c.y >= g.y ? 1 : -1) * 110 * dt; vx *= 0.15; }
+      if (g.fight.phase < 2 && Math.abs(c.x - (g.fight.ax + g.fight.bx) / 2) < 120 && Math.abs(c.y - g.fight.y) < 60) c.y += (c.y >= g.fight.y ? 1 : -1) * 90 * dt;
+      if (!g.dni.picked && !g.res[0] && vx && Math.abs(c.x - g.dni.x) < 16 && Math.abs(c.y - g.dni.y) < 12 && this.dist(g.x, g.y, g.dni.x, g.dni.y) > 100) { g.dni.vx = Math.sign(vx) * 120; g.dni.vy = (Math.random() - 0.5) * 70; g.dni.kickT = 1.2; }
+      c.y = Math.min(688, Math.max(322, c.y));
+      c.x += vx * dt;
+      c.moving = Math.abs(vx) > 1;
+      const z = zones[c.zone];
+      if (c.x > z[1] || c.x < z[0]) {
+        const other = c.x > z[1] ? z[0] + 10 : z[1] - 10;
+        if (!this.visible(c.x, 120) && !this.visible(other, 120)) { c.x = other; c.y = 330 + Math.random() * 350; }
+        else { c.vx = -c.vx; c.x = Math.min(z[1], Math.max(z[0], c.x)); }
+      }
+    });
+  }
+  /* la fila del molinete que anda: si te colás, te insultan */
+  updateQueue(dt) {
+    const g = this.g, L5 = this.L(5, 0), open = this.gateOpen();
+    const waiting = g.queue.filter((q) => q.state === 'wait');
+    const inBand = Math.abs(g.y - 654) < 22 && g.x > L5 + 470 && g.x < L5 + 690;
+    if (!inBand) g.queued = false;
+    if (inBand && waiting.every((q) => q.x > g.x - 6)) g.queued = true;
+    const front = inBand && g.x > L5 + 600 && waiting.every((q) => q.x < g.x);
+    waiting.forEach((q, k) => {
+      let slot = L5 + 660 - k * 36;
+      if (g.queued && inBand && g.x > slot - 40 && g.x < slot + 30) slot = g.x - 40;
+      const d = slot - q.x;
+      q.moving = Math.abs(d) > 1;
+      q.x += Math.sign(d) * Math.min(Math.abs(d), 60 * dt);
+      q.y += (654 - q.y) * Math.min(1, dt * 3);
+    });
+    if (open && g.gateWasQ === false && waiting.length && Math.abs(waiting[0].x - (L5 + 660)) < 6 && !front) waiting[0].state = 'pass';
+    g.gateWasQ = open;
+    g.queue.forEach((q) => { if (q.state === 'pass') { q.x += 110 * dt; q.moving = true; if (q.x > L5 + 1400) q.state = 'gone'; } });
+    g.queue = g.queue.filter((q) => q.state !== 'gone');
+    g.qSpawnT -= dt;
+    if (g.qSpawnT <= 0 && waiting.length < 4) { g.qSpawnT = 3 + Math.random() * 2; g.queue.push({ row: Math.floor(Math.random() * 12), x: L5 + 380, y: 600 + Math.random() * 80, state: 'wait', moving: true, ph: Math.random() * 6 }); }
+    // colarse: estar en el carril adelante de alguien que ya hacía la fila
+    const cutting = g.phase === 'play' && inBand && !g.queued && waiting.some((q) => q.x < g.x - 8);
+    if (cutting) {
+      if (g.cutT <= 0) g.grumbleT = 0;
+      g.cutT = 0.6;
+      g.grumbleT -= dt;
+      if (g.grumbleT <= 0) { g.grumbleT = 0.9; this.grumble(); }
+      g.crowd.forEach((c) => { if (Math.abs(c.x - g.x) < 300 && Math.abs(c.y - g.y) < 200 && c.react <= 0.1) { c.react = 0.8; c.rtag = 'q'; } });
+    }
+  }
+  updateHelpers(dt) {
+    const g = this.g;
+    (g.helpers || []).forEach((h) => {
+      h.moving = false;
+      const tg = this.target(h.ev, true);
+      const done = !!g.res[h.ev] || (h.ev === 0 && g.dni.picked);
+      const goTo = (x, y, sp) => {
+        const dx = x - h.x, dy = y - h.y, d = Math.hypot(dx, dy);
+        if (d < 4) return true;
+        h.x += dx / d * sp * dt; h.y += dy / d * sp * dt;
+        if (Math.abs(dx) > 2) h.face = Math.sign(dx);
+        h.moving = true; return false;
+      };
+      if (h.state === 'wait') {
+        h.t -= dt;
+        if (h.t <= 0 && !done && g.phase === 'play' && Math.abs(g.x - tg.x) < 900) { h.state = 'go'; h.x = g.camX - this.viewW() / 2 - 40; h.y = 360 + Math.random() * 300; }
+        return;
+      }
+      if (h.state === 'go') {
+        if (done) { h.state = 'leave'; h.tag = null; return; }
+        const sp = this.helperSpot(h, tg);
+        if (goTo(sp.x, sp.y, 125)) { h.state = 'act'; h.t = 0; h.did = false; }
+        return;
+      }
+      if (h.state === 'act') {
+        h.t += dt;
+        const dur = h.kind === 'listen' ? 5 : 2.3;
+        h.face = tg.x >= h.x ? 1 : -1;
+        if (g.res[h.ev] === 'help' && h.kind !== 'listen') { h.tag = 'heart'; h.t = Math.max(h.t, dur - 0.9); }
+        else if (h.kind === 'look') h.tag = h.t < 1.3 ? 'q' : 'dots';
+        else if (h.kind === 'shrug') h.tag = h.t < 1 ? 'dots' : 'x';
+        else if (h.kind === 'listen') h.tag = h.t > 3.7 ? 'coin' : 'note';
+        else if (h.kind === 'card') h.tag = h.t < 1 ? 'card' : 'x';
+        if (!h.did) {
+          if (h.kind === 'card' && h.t >= 1) { h.did = true; g.readerFlash = 0.6; }
+          if (h.ev === 0 && h.t > 1.3) { h.did = true; if (!done && this.dist(g.x, g.y, g.dni.x, g.dni.y) > 100) { g.dni.vx = 120; g.dni.vy = (Math.random() - 0.5) * 80; } }
+          if (h.kind === 'listen' && h.t > 3.7) { h.did = true; if (this.dist(g.x, g.y, h.x, h.y) < 520) this.note(1568, 0, 0.08, 0.022, 'square', 3000); }
+        }
+        if (h.t >= dur) { h.state = 'leave'; h.tag = null; }
+        return;
+      }
+      if (h.state === 'leave') {
+        const dir = h.ev === 8 ? -1 : 1;
+        goTo(h.x + dir * 400, h.y, 135);
+        if (!this.visible(h.x, 80)) { h.state = 'wait'; h.t = 3.5 + Math.random() * 4; }
+      }
+    });
+  }
+  helperSpot(h, tg) {
+    const g = this.g, L = (s, x) => this.L(s, x);
+    switch (h.ev) {
+      case 0: return { x: g.dni.x - 34, y: g.dni.y + 4 };
+      case 1: return { x: L(1, 260), y: 420 };
+      case 2: return { x: L(1, 944), y: Math.min(688, Math.max(330, g.ask.y + 8)) };
+      case 3: return h.o ? { x: L(2, 672), y: 386 } : { x: L(2, 506), y: 372 };
+      case 4: return { x: L(2, 990), y: 430 };
+      case 6: return { x: L(4, 778), y: 668 };
+      case 7: return { x: L(4, 1020), y: 400 };
+      case 8: return [{ x: L(5, 664), y: 396 }, { x: L(5, 660), y: 430 }, { x: L(5, 636), y: 386 }][h.o];
+      case 9: return { x: g.kid.x + 70, y: g.kid.y + 20 };
+    }
+    return { x: tg.x - 60, y: tg.y + 20 };
+  }
+
+  /* ================= situaciones ================= */
+  events(dt) {
+    const g = this.g, L = (s, x) => this.L(s, x);
+    // la situación sin resolver más cercana
+    let best = -1, bd = 760;
+    for (let i = 0; i < 10; i++) {
+      if (g.res[i]) continue;
+      const t = this.target(i);
+      if (!t) continue;
+      const d = Math.abs(t.x - g.x) + Math.abs(t.y - g.y) * 0.3;
+      if (d < bd) { bd = d; best = i; }
+    }
+    if (best !== g.act) { g.prog = 0; this.holdStop(); }
+    g.act = best;
+    g.inRange = false;
+    let holding = false;
+    const holdAt = (i, cond) => {
+      if (g.act !== i) return false;
+      if (g.hold && cond && !g.moving) {
+        holding = true;
+        if (!this.holdOsc) this.holdStart();
+        g.prog += dt / this.holdDur(i); this.holdSet(g.prog);
+        if (g.prog >= 1) { g.prog = 0; this.holdStop(); return true; }
+      } else if (g.prog > 0) g.prog = Math.max(0, g.prog - dt * 2);
+      return false;
+    };
+    const near = (i) => { const a = this.approach(i); return a && this.dist(g.x, g.y, a.x, a.y) < this.range(i); };
+    // 0 · documento pateado
+    const D = g.dni;
+    if (!g.res[0]) {
+      if (!D.picked) {
+        const d = this.dist(g.x, g.y, D.x, D.y);
+        if (d < 70) { D.vx *= Math.max(0, 1 - dt * 8); D.vy *= Math.max(0, 1 - dt * 8); D.kickT = Math.max(D.kickT, 0.6); }
+        if (g.mouseHold && g.act === 0) g.walkTo = { x: D.x, y: D.y };
+        D.kickT -= dt;
+        if (D.kickT <= 0) { D.kickT = 0.9 + Math.random() * 0.8; const a = Math.random() * Math.PI * 2; D.vx = Math.cos(a) * 80; D.vy = Math.sin(a) * 50; if (this.visible(D.x)) this.noise(0.05, 0.05, 900, 500); }
+        D.x += D.vx * dt; D.y += D.vy * dt; D.rot += D.vx * dt * 0.6;
+        if (D.x < L(0, 640) || D.x > L(0, 800)) { D.vx *= -1; D.x = Math.min(L(0, 800), Math.max(L(0, 640), D.x)); }
+        if (D.y < 470 || D.y > 684) { D.vy *= -1; D.y = Math.min(684, Math.max(470, D.y)); }
+        if (g.act === 0) g.inRange = d < 120;
+        if (holdAt(0, d < 44)) { D.picked = true; D.ownerOn = true; this.sfx('papel', { vol: 1 }); g.noticed = -1; g.squashT = 0.15; }
+      } else if (g.act === 0) g.inRange = this.dist(g.x, g.y, L(0, 1120), 640) < 120;
+      if (g.x > L(0, 1260)) this.ignore(0);
+    }
+    // 1 · persona durmiendo en un rincón: detenerse a mirar
+    if (!g.res[1]) {
+      if (g.act === 1) g.inRange = near(1);
+      if (holdAt(1, g.inRange)) this.help(1);
+      if (g.x > L(1, 520)) this.ignore(1);
+    }
+    // 2 · alguien pregunta por la línea y se te pone adelante
+    const Q = g.ask;
+    if (!g.res[2]) {
+      const step = 160 * dt, prev = Q.y;
+      Q.y += Math.max(-step, Math.min(step, g.y - Q.y)); Q.y = Math.max(330, Math.min(688, Q.y));
+      Q.moving = Math.abs(Q.y - prev) > 0.5;
+      Q.contact = g.x > L(1, 880) && g.x < L(1, 1060) && Math.abs(g.y - Q.y) < 80;
+      if (g.act === 2) g.inRange = Q.contact;
+      if (g.x > L(1, 1080)) this.ignore(2);
+    } else { const prev = Q.y; Q.y += (330 - Q.y) * Math.min(1, dt * 2); Q.moving = Math.abs(Q.y - prev) > 0.5; Q.contact = false; }
+    // 3 · artista
+    if (!g.res[3]) {
+      if (g.act === 3) g.inRange = this.dist(g.x, g.y, L(2, 590), 330) < 160;
+      if (g.x > L(2, 880)) this.ignore(3);
+    }
+    // 4 · alguien buscando en la basura: compartir algo de comer
+    if (!g.res[4]) {
+      if (g.act === 4) g.inRange = near(4);
+      if (holdAt(4, g.inRange)) { g.trash.up = true; this.sfx('papel', { rate: 1.2 }); this.help(4); }
+      if (g.x > L(3, 40)) this.ignore(4);
+    }
+    // 5 · pelea: apretar el botón de emergencia (acercarse a separarlos te empuja)
+    const F = g.fight;
+    F.t += dt;
+    if (F.phase === 0) {
+      if (Math.floor(F.t / 0.55) !== Math.floor((F.t - dt) / 0.55) && Math.abs(g.x - F.ax) < 900) this.thump();
+      const fx = (F.ax + F.bx) / 2;
+      if (this.dist(g.x, g.y, fx, F.y) < 70 && g.stun <= 0) { g.x -= 46 * Math.sign(fx - g.x || 1); g.stun = 0.35; g.shakeT = 0.25; this.bump(); this.oops(); }
+    }
+    if (!g.res[5]) {
+      if (g.act === 5) g.inRange = near(5);
+      if (holdAt(5, g.inRange)) { this.siren(); F.phase = 1; F.guard = { x: L(3, 1320), y: 420, face: -1, moving: true }; this.help(5); }
+      if (g.x > L(3, 1200)) this.ignore(5);
+    }
+    if (F.phase === 1 && F.guard) {
+      const gd = F.guard, tx = (F.ax + F.bx) / 2 + 20, d = tx - gd.x;
+      gd.x += Math.sign(d) * Math.min(Math.abs(d), 190 * dt); gd.moving = Math.abs(d) > 2; gd.y += (F.y + 20 - gd.y) * Math.min(1, dt * 2);
+      if (Math.abs(d) < 3) { F.phase = 2; F.t = 0; }
+    }
+    if (F.phase === 2) { F.ax -= 40 * dt; F.bx += 40 * dt; if (F.t > 4) F.phase = 3; }
+    // 6 · vendedor con su hijo
+    const V = g.vend;
+    if (!g.res[6] && !V.kid && !V.kidDone && this.dist(g.x, g.y, V.kx, V.ky) < 90) { V.kid = true; g.squashT = 0.15; this.bump(); }
+    if (V.kid) { V.kx = g.x - 30 * g.face; V.ky = g.y + 6; }
+    else if (V.kidDone) { V.kx += (L(4, 690) - V.kx) * Math.min(1, dt * 3); V.ky += (672 - V.ky) * Math.min(1, dt * 3); }
+    if (!g.res[6]) {
+      if (g.act === 6) g.inRange = this.dist(g.x, g.y, L(4, 720), 655) < 150;
+      if (g.x > L(4, 990)) this.ignore(6);
+    }
+    // 7 · ascensor fuera de servicio: buscar al oficial y traerlo
+    const A = g.lift, O = g.off;
+    if (!g.res[7]) {
+      if (g.act === 7) g.inRange = near(7);
+      if (A.stage === 2) {
+        const d = this.dist(O.x, O.y, g.x, g.y);
+        O.stuck = d > (O.stuck ? 220 : 380);
+        if (!O.stuck) { const tx = g.x - g.face * 46, ty = g.y + 6, dd = this.dist(O.x, O.y, tx, ty); if (dd > 6) { O.x += (tx - O.x) / dd * Math.min(dd, 205 * dt); O.y += (ty - O.y) / dd * Math.min(dd, 205 * dt); O.face = tx > O.x ? 1 : -1; O.moving = true; } else O.moving = false; }
+        else O.moving = false;
+        if (this.dist(O.x, O.y, A.px, A.py) < 150) { A.stage = 3; this.help(7); }
+      }
+      if (g.x > L(5, 80)) this.ignore(7);
+    }
+    if (A.stage === 1 && this.dist(g.x, g.y, O.x, O.y) < 220) { O.moving = false; O.face = g.x > O.x ? 1 : -1; }
+    else if (A.stage < 2) {
+      O.wait -= dt;
+      if (O.wait <= 0) {
+        const dd = this.dist(O.x, O.y, O.tx, O.ty);
+        if (dd < 4) { O.wait = 2 + Math.random() * 2.5; O.tx = L(4, 100) + Math.random() * 420 - (Math.random() < 0.3 ? 300 : 0); O.ty = 420 + Math.random() * 240; O.moving = false; }
+        else { O.x += (O.tx - O.x) / dd * Math.min(dd, 70 * dt); O.y += (O.ty - O.y) / dd * Math.min(dd, 70 * dt); O.face = O.tx > O.x ? 1 : -1; O.moving = true; }
+      } else O.moving = false;
+    }
+    if (A.stage === 3) { const tx = A.px - 40, ty = A.py + 10, dd = this.dist(O.x, O.y, tx, ty); if (dd > 3) { O.x += (tx - O.x) / dd * Math.min(dd, 90 * dt); O.y += (ty - O.y) / dd * Math.min(dd, 90 * dt); O.moving = true; O.face = 1; } else { O.moving = false; O.face = 1; } }
+    // 8 · la señora del molinete
+    if (!g.res[8]) {
+      if (g.act === 8) g.inRange = near(8);
+      if (holdAt(8, g.inRange)) this.help(8);
+      if (g.x > L(5, 770)) this.ignore(8);
+    } else if (g.res[8] === 'help' && g.sen.x < L(5, 1320)) g.sen.x += 120 * dt;
+    // 9 · niño que perdió de vista a su acompañante
+    const K = g.kid;
+    K.t += dt;
+    if (!g.res[9]) {
+      if (K.stage === 0) {
+        K.face = Math.floor(K.t / 0.9) % 2 ? 1 : -1;
+        if (g.act === 9) g.inRange = this.dist(g.x, g.y, K.x, K.y) < 90;
+        if (holdAt(9, g.inRange)) { K.stage = 1; this.chime(); }
+      } else if (K.stage === 1) {
+        const tx = g.x - g.face * 40, ty = g.y + 8, dd = this.dist(K.x, K.y, tx, ty);
+        if (dd > 6) { K.x += (tx - K.x) / dd * Math.min(dd, 210 * dt); K.y += (ty - K.y) / dd * Math.min(dd, 210 * dt); K.face = tx > K.x ? 1 : -1; K.moving = true; } else K.moving = false;
+        const staff = g.guards.concat([g.off]);
+        if (staff.some((s) => this.dist(s.x, s.y, K.x, K.y) < 100)) { K.stage = 2; K.moving = false; this.help(9); K.parent = { x: this.W + 40, y: K.y, moving: true }; }
+      }
+    }
+    if (K.stage === 2 && K.parent) { const P = K.parent, tx = K.x + 40, d = tx - P.x; P.x += Math.sign(d) * Math.min(Math.abs(d), 150 * dt); P.moving = Math.abs(d) > 2; }
+    if (!holding) this.holdStop();
+  }
+  updateMini(dt, dx, dy) {
+    const g = this.g, m = g.mini;
+    if (m.type === 'rh') {
+      if (dx || dy) { g.mini = null; return; }
+      m.t += dt;
+      const T = (i) => 0.9 + i * 0.6;
+      for (let i = 0; i < 4; i++) {
+        if (!m.ticked[i] && m.t >= T(i)) { m.ticked[i] = true; this.tick(); }
+        if (!m.judged[i] && m.t > T(i) + 0.2) m.judged[i] = 'miss';
+      }
+      if (m.t > T(3) + 0.45) {
+        const hits = m.judged.filter((j) => j === 'hit').length;
+        if (hits >= 3) { g.art.coin = true; this.sfx('papel', { rate: 1.3 }); this.help(3); }
+        else { g.mini = { type: 'rh', t: 0, judged: [false, false, false, false], ticked: [false, false, false, false] }; this.oops(); }
+      }
+    }
+    if (m.type === 'coin') {
+      m.cx = Math.min(this.W, Math.max(0, m.cx + dx * 220 * dt));
+      m.cy = Math.min(700, Math.max(80, m.cy + dy * 220 * dt));
+    }
+  }
+  press() {
+    const g = this.g, L = (s, x) => this.L(s, x);
+    if (g.phase !== 'play' || g.stun > 0) return;
+    const i = g.act, m = g.mini;
+    if (!m && !(i >= 0 && g.inRange)) {
+      let best = null, bd = 80;
+      g.crowd.forEach((c) => { const d = this.dist(c.x, c.y, g.x, g.y); if (d < bd) { bd = d; best = c; } });
+      if (best) { best.react = 1.3; best.rtag = 'q'; this.note(660, 0, 0.06, 0.02, 'square', 2000); }
+    }
+    if (i < 0 || g.res[i]) return;
+    if (i === 0 && g.dni.picked && g.inRange) this.help(0);
+    if (i === 2 && g.ask.contact && !m) { g.mini = { type: 'trace', step: 0, drag: false, cur: null, shake: 0 }; this.sfx('papel', { rate: 0.8, vol: 0.8 }); g.walkTo = null; g.hold = false; g.mouseHold = false; }
+    if (i === 3) {
+      if (m && m.type === 'rh') {
+        let hitAny = false;
+        for (let k = 0; k < 4; k++) {
+          const T = 0.9 + k * 0.6;
+          if (!m.judged[k] && Math.abs(m.t - T) < 0.2) { m.judged[k] = 'hit'; hitAny = true; this.sfx('papel', { rate: 1 + k * 0.12 }); this.note([523.25, 659.25, 783.99, 1046.5][k], 0, 0.14, 0.045, 'square', 2600); break; }
+        }
+        if (!hitAny) { this.oops(); g.squashT = 0.12; }
+      } else if (g.inRange && !m) g.mini = { type: 'rh', t: 0, judged: [false, false, false, false], ticked: [false, false, false, false] };
+    }
+    if (i === 6) {
+      if (m && m.type === 'coin') {
+        if (this.dist(m.cx, m.cy, L(4, 746), 611) < 26) { this.sfx('papel', { rate: 1.4 }); this.help(6); }
+        else { this.oops(); m.cx = g.x; m.cy = g.y - 70; }
+      } else if (g.inRange && !m) { g.mini = { type: 'coin', cx: g.x, cy: g.y - 70 }; this.sfx('papel', { rate: 1.6, vol: 0.7 }); }
+    }
+    if (i === 7) {
+      if (g.lift.stage === 0 && g.inRange) { g.lift.stage = 1; this.chime(); g.noticed = -1; }
+      else if (g.lift.stage === 1 && this.dist(g.x, g.y, g.off.x, g.off.y) < 120) { g.lift.stage = 2; this.chime(); this.sfx('papel', { rate: 0.7 }); }
+    }
+  }
+  arrowInMini(key) {
+    const g = this.g, m = g.mini;
+    if (!m || m.type !== 'trace') return false;
+    const P = this.TPATH, a = P[m.step], b = P[m.step + 1];
+    if (!b) return true;
+    const dx = b[0] - a[0], dy = b[1] - a[1];
+    const want = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'ArrowRight' : 'ArrowLeft') : (dy > 0 ? 'ArrowDown' : 'ArrowUp');
+    if (key === want) this.traceStep(); else this.traceFail();
+    return true;
+  }
+  alternate(key) {
+    const g = this.g, a = g.alt, now = performance.now();
+    if (key !== a.last && now - a.at < 650) a.n++; else a.n = 1;
+    a.last = key; a.at = now;
+    const active = (g.act === 2 && g.ask.contact && !g.mini) || (g.act === 6 && g.vend.kid);
+    if (active && a.n >= 2) { this.bump(); g.squashT = 0.1; }
+    if (a.n >= 4 && active) { this.ignore(g.act); a.n = 0; }
+  }
+
+  /* ================= render ================= */
+  renderVals() {
+    const g = this.g, L = (s, x) => this.L(s, x);
+    const P = (v) => Math.round(v) + 'px';
+    const Z = this.Z(), vw = this.viewW();
+    const i = g.act, tgt = i >= 0 ? this.target(i) : null;
+    const left = g.left;
+    const abs = Math.abs(Math.round(left));
+    const clock = (left < 0 ? '+' : '') + String(Math.floor(abs / 60)).padStart(2, '0') + ':' + String(abs % 60).padStart(2, '0');
+    const pm = 8 * 60 + 50 + Math.floor((600 - left) / 60);
+    const phoneTime = String(Math.floor(pm / 60)).padStart(2, '0') + ':' + String(pm % 60).padStart(2, '0');
+    const crowdTint = 'saturate(' + Math.max(0.1, 0.34 - g.ignores * 0.03).toFixed(2) + ') brightness(' + (0.88 - g.focus * 0.14).toFixed(2) + ')';
+    const inView = (x) => Math.abs(x - g.camX) < vw / 2 + 90;
+    const sprite = (x, y, row, frame, o) => {
+      const sc = o.sc || 1, sq = o.squash ? 0.92 : 1;
+      let tr = 'scale(' + ((o.flip || 1) * sc * (o.squash ? 1.06 : 1)).toFixed(2) + ',' + (sc * sq).toFixed(2) + ')';
+      if (o.dx) tr = 'translateX(' + o.dx + 'px) ' + tr;
+      return { l: P(x - 24), t: P(y - 76 - (o.hop || 0)), z: Math.round(y), bp: '-' + frame * 48 + 'px -' + row * 80 + 'px', tr, sl: P(x - 15 * sc), st: P(y - 4), sw: P(30 * sc), filter: o.filter || 'none', label: o.label || 'Persona en la estación' };
+    };
+    const walkF = (ph, rate) => 1 + (Math.floor(g.t * (rate || 7) + (ph || 0)) % 2);
+    const tags = [];
+    const TAG = { q: ['?', '#e6dfc0'], ex: ['!', '#e8b33a'], x: ['X', '#e05a4a'], dots: ['...', '#bdb795'], zzz: ['z z', '#8ec8f0'], grr: ['#@$%!', '#ffb09a'], help: ['?!', '#8ec8f0'], hm: ['...', '#bdb795'] };
+    const tag = (x, y, kind) => {
+      if (!inView(x)) return;
+      const t = TAG[kind];
+      tags.push({ l: P(x - 11), t: P(y - 108), cls: kind === 'grr' ? 'tag grr' : 'tag', isTxt: !!t, txt: t ? t[0] : '', color: t ? t[1] : '#e6dfc0', heart: kind === 'heart', card: kind === 'card', note: kind === 'note', coin: kind === 'coin', rec: kind === 'rec', tear: kind === 'tear' });
+    };
+    const actors = [];
+    g.crowd.forEach((c) => {
+      if (!inView(c.x)) return;
+      const lookUp = c.react > 0 || (c.idle && this.dist(c.x, c.y, g.x, g.y) < 64);
+      if (c.react > 0) tag(c.x, c.y, c.rtag || 'q');
+      else if (c.rec && g.fight.phase < 2 && Math.floor(g.t * 1.5 + c.ph) % 3 === 0) tag(c.x, c.y, 'rec');
+      const fr = lookUp ? 0 : c.idle ? (c.phone ? 3 + (Math.floor(g.t * 0.8 + c.ph) % 2) : 0) : (c.moving ? walkF(c.ph) : 0);
+      const flip = c.rec ? (L(3, 905) > c.x ? 1 : -1) : lookUp ? (g.x >= c.x ? 1 : -1) : (c.vx < 0 ? -1 : 1);
+      actors.push(sprite(c.x, c.y, c.row, fr, { flip, filter: crowdTint }));
+    });
+    // la fila del molinete (se enojan si te colás)
+    const angry = g.cutT > 0;
+    g.queue.forEach((q, k) => {
+      if (!inView(q.x)) return;
+      if (angry && q.state === 'wait') tag(q.x, q.y, 'grr');
+      actors.push(sprite(q.x, q.y, q.row, q.moving ? walkF(q.ph) : (angry ? 0 : 3 + (Math.floor(g.t * 0.6 + q.ph) % 2)), { flip: angry && q.state === 'wait' ? (g.x > q.x ? 1 : -1) : 1, filter: angry ? 'saturate(1.2) brightness(1.05)' : crowdTint, squash: angry && Math.floor(g.t * 8 + k) % 2 === 0 }));
+    });
+    const helperTint = 'saturate(.7) brightness(' + (0.95 - g.focus * 0.1).toFixed(2) + ')';
+    (g.helpers || []).forEach((h) => {
+      if (h.state === 'wait' || !inView(h.x)) return;
+      actors.push(sprite(h.x, h.y, h.row, h.moving ? walkF(h.o) : 0, { flip: h.face, filter: helperTint }));
+      if (h.tag) tag(h.x, h.y, h.tag);
+    });
+    const glow = g.glowT > 0 ? ' drop-shadow(0 0 6px rgba(255,200,90,.9))' : '';
+    const needyF = (k) => (g.res[k] === 'ignore' ? 'grayscale(1) brightness(.8)' : 'saturate(1.2) brightness(' + (1 + (g.act === k ? 0.15 * (g.near || 0) : 0)).toFixed(2) + ')') + (g.hopI === k ? glow : '');
+    const hopOf = (k) => (g.hopI === k && g.hopT > 0 ? Math.sin((0.45 - g.hopT) / 0.45 * Math.PI) * 10 : 0);
+    const needy = (k, x, y, row, frame, label, extra) => { if (inView(x)) actors.push(sprite(x, y, row, frame, Object.assign({ filter: needyF(k), label, hop: hopOf(k), flip: x > g.x ? -1 : 1 }, extra || {}))); };
+    const props = [];
+    const prop = (src, x, y, w, h, alt, o) => { if (inView(x)) props.push(Object.assign({ src, l: P(x - w / 2), t: P(y - h), w: P(w), h: P(h), z: Math.round(y), alt, tr: 'none', f: 'none' }, o || {})); };
+    // 0
+    if (g.dni.ownerOn) needy(0, L(0, 1120), 640, 13, 0, 'Dueño del documento');
+    // 1 · durmiendo
+    prop(Math.floor(g.t * 0.8) % 2 ? this.IMG.sleep2 : this.IMG.sleep1, L(1, 150), 346, 104, 36, 'Persona durmiendo sobre un cartón en un rincón', { f: g.res[1] === 'ignore' ? 'grayscale(1) brightness(.8)' : g.hopI === 1 && g.glowT > 0 ? 'drop-shadow(0 0 6px rgba(255,200,90,.9))' : 'none' });
+    if (g.res[1] !== 'help' && Math.floor(g.t * 0.7) % 3 !== 2) tag(L(1, 120), 400, 'zzz');
+    // 2
+    needy(2, L(1, 985), g.ask.y, 14, g.ask.moving ? walkF(0) : 0, 'Persona que pregunta por la línea');
+    // 3
+    needy(3, L(2, 590), 330, 15, g.res[3] === 'ignore' ? 0 : (Math.floor(g.t * 4) % 2 ? 5 : 0), 'Artista callejero', { flip: 1 });
+    // 4 · buscando en la basura
+    prop(this.IMG.bin, L(2, 1112), 360, 44, 44, 'Cesto de basura');
+    needy(4, L(2, 1080), 352, g.trash.up ? 4 : 21, g.trash.up ? 0 : (Math.floor(g.t * 2.5) % 2 ? 1 : 0), 'Persona buscando algo en la basura', { flip: 1 });
+    // 5 · pelea
+    const F = g.fight;
+    if (F.phase < 3) {
+      const lunge = F.phase === 0 ? Math.floor(F.t / 0.55) % 2 : 0;
+      needy(5, F.ax, F.y, 7, F.phase >= 2 ? walkF(0) : lunge ? 5 : 0, 'Persona peleando', { flip: F.phase >= 2 ? -1 : 1, dx: lunge ? 8 : 0, squash: F.phase === 0 && !lunge });
+      needy(5, F.bx, F.y, 10, F.phase >= 2 ? walkF(1) : !lunge ? 5 : 0, 'Persona peleando', { flip: F.phase >= 2 ? 1 : -1, dx: !lunge ? -8 : 0, squash: F.phase === 0 && !!lunge });
+      if (F.phase === 0) { tag(F.ax, F.y, lunge ? 'grr' : 'ex'); tag(F.bx, F.y, lunge ? 'ex' : 'grr'); }
+    }
+    if (F.guard && inView(F.guard.x)) { actors.push(sprite(F.guard.x, F.guard.y, 19, F.guard.moving ? walkF(0, 9) : 0, { flip: F.guard.face, label: 'Personal de la estación' })); if (F.phase === 1) tag(F.guard.x, F.guard.y, 'ex'); }
+    // limpieza
+    const C = g.cleaner;
+    if (inView(C.x)) actors.push(sprite(C.x, C.y, 20, 3 + (Math.floor(g.t * 3) % 2), { flip: C.face, label: 'Persona limpiando el pasillo', filter: 'saturate(.9)' }));
+    prop(this.IMG.wet, L(3, 100), 540, 36, 36, 'Cartel de piso mojado');
+    prop(this.IMG.wet, L(3, 590), 580, 36, 36, 'Cartel de piso mojado');
+    // 6 · vendedor y su hijo
+    needy(6, L(4, 720), 655, 16, 0, 'Vendedor ambulante');
+    needy(6, g.vend.kx, g.vend.ky, 17, g.vend.kid ? walkF(0, 9) : 0, 'Hijo del vendedor', { sc: 0.8, flip: g.vend.kid ? g.face : -1 });
+    // 7 · ascensor
+    needy(7, g.lift.px, g.lift.py, 22, g.lift.stage === 3 ? 1 : 0, 'Persona en silla de ruedas frente al ascensor', { flip: -1 });
+    const O = g.off;
+    if (inView(O.x)) actors.push(sprite(O.x, O.y, 19, O.moving ? walkF(0) : (g.lift.stage === 1 ? 3 : 0), { flip: O.face, label: 'Oficial de la estación', filter: g.lift.stage === 1 ? 'brightness(1.15) drop-shadow(0 0 5px rgba(232,179,58,.9))' : 'none' }));
+    if (g.lift.stage === 2 && O.stuck) tag(O.x, O.y, 'dots');
+    if (g.lift.stage === 1) tag(g.lift.px, g.lift.py, 'help');
+    // 8 · señora
+    if (g.sen.x < L(5, 1300)) {
+      needy(8, g.sen.x, 410, 18, g.res[8] === 'help' ? walkF(0) : 0, 'Señora con la tarjeta rechazada', { flip: g.res[8] === 'help' ? 1 : -1 });
+      if (!g.res[8] && !g.inRange) { const c5 = g.t % 5; if (c5 < 1) tag(g.sen.x, 410, 'card'); else if (c5 < 1.9) tag(g.sen.x, 410, 'x'); }
+    }
+    g.guards.forEach((q) => { if (inView(q.x)) actors.push(sprite(q.x, q.y, 19, 0, { flip: q.face, label: 'Personal de la estación', filter: g.kid.stage === 1 ? 'brightness(1.15) drop-shadow(0 0 5px rgba(232,179,58,.9))' : 'none' })); });
+    // 9 · niño perdido
+    const K = g.kid;
+    needy(9, K.x, K.y, 17, K.moving ? walkF(0, 9) : 0, 'Niño buscando a su acompañante', { sc: 0.8, flip: K.face });
+    if (K.stage === 0 && !g.res[9]) tag(K.x, K.y + 12, Math.floor(g.t * 1.2) % 2 ? 'q' : 'tear');
+    if (K.parent && inView(K.parent.x)) { actors.push(sprite(K.parent.x, K.parent.y, 8, K.parent.moving ? walkF(0) : 0, { flip: -1, label: 'Quien acompañaba al niño' })); if (!K.parent.moving) tag(K.parent.x, K.parent.y, 'heart'); }
+    // corazones y puntos suspensivos de quien ayudaste o ignoraste
+    for (let k = 0; k < 10; k++) {
+      const t = this.target(k, true);
+      if (!t) continue;
+      if (g.res[k] === 'help' && g.hopI === k && g.glowT > 0) tag(t.x, t.y, 'heart');
+      if (g.res[k] === 'ignore' && g.sadI === k && g.sadT > 0 && k !== 0 && k !== 5) tag(t.x, t.y, 'hm');
+    }
+    const m = g.mini;
+    // personaje (se cae si pisa lo mojado)
+    const fallen = g.slipT > 0;
+    const pframe = g.moving ? 1 + (Math.floor(g.dist / 16) % 2) : 0;
+    const squash = g.squashT > 0;
+    const ptr = fallen ? 'scale(' + (g.face < 0 ? -1 : 1) + ',1) rotate(' + (g.slipT > 0.5 ? 90 : 35) + 'deg)' : 'scale(' + ((g.face < 0 ? -1 : 1) * (squash ? 1.07 : 1)).toFixed(2) + ',' + (squash ? '0.92' : '1') + ')';
+    // ícono de acción
+    const showBubble = !!tgt && !m && g.phase === 'play' && inView(tgt.x) && !(i === 8 && !g.inRange && g.t % 5 < 1.9);
+    const bubbleTop = tgt ? tgt.y - (tgt.obj ? 120 : tgt.kid ? 150 : 166) : 0;
+    const holdScene = (i === 0 && !g.dni.picked) || i === 1 || i === 4 || i === 5 || i === 8 || (i === 9 && g.kid.stage === 0);
+    let rr = 0, rhythmDots = [], rhythmOn = false;
+    if (m && m.type === 'rh') {
+      rhythmOn = true;
+      let next = 0; while (next < 4 && m.judged[next]) next++;
+      const T = 0.9 + Math.min(next, 3) * 0.6;
+      rr = next < 4 ? 44 + Math.max(0, T - m.t) * 140 : 44;
+      rhythmDots = m.judged.map((j) => ({ bg: j === 'hit' ? '#c9d97a' : j === 'miss' ? '#e05a4a' : '#3b3d2c' }));
+    }
+    // plano
+    const segDiv = (a, b, c, o) => ({ l: P(a[0]), t: P(a[1] - 4), w: P(Math.hypot(b[0] - a[0], b[1] - a[1])), a: Math.atan2(b[1] - a[1], b[0] - a[0]).toFixed(4) + 'rad', c: c || '#f4f0dc', o: o || '1' });
+    const trLines = [], trStops = [], trTrail = [];
+    let trNext = [0, 0];
+    if (m && m.type === 'trace') {
+      this.TLINES.forEach((ln) => { for (let k = 0; k < ln.p.length - 1; k++) trLines.push(segDiv(ln.p[k], ln.p[k + 1], ln.c, '0.85')); ln.p.forEach((pt) => trStops.push({ l: P(pt[0]), t: P(pt[1]), c: ln.c })); });
+      const TP = this.TPATH;
+      for (let k = 0; k < TP.length - 1; k++) trLines.push(segDiv(TP[k], TP[k + 1], k < 3 ? '#3bb3e6' : '#f2c200'));
+      TP.forEach((pt, k) => trStops.push({ l: P(pt[0]), t: P(pt[1]), c: k < 3 ? '#3bb3e6' : k === 3 ? '#e6dfc0' : '#f2c200' }));
+      for (let k = 0; k < m.step; k++) trTrail.push(segDiv(TP[k], TP[k + 1]));
+      if (m.drag && m.cur && m.step < TP.length - 1) trTrail.push(segDiv(TP[m.step], m.cur));
+      trNext = m.drag ? TP[Math.min(TP.length - 1, m.step + 1)] : TP[m.step];
+    }
+    const ended = g.phase === 'end';
+    const shake = g.shakeT > 0 ? (Math.round(g.t * 60) % 2 ? 4 : -4) : 0;
+    const fx = tgt && g.focus > 0.05 ? tgt.x : g.x, fy = tgt && g.focus > 0.05 ? tgt.y - 40 : g.y - 40;
+    const zoom = Z * (1 + g.focus * 0.04);
+    const wx = Math.round(640 - g.camX * zoom + shake), wy = Math.round(360 - g.camY * zoom);
+    const toS = (x, y) => [(x - g.camX) * zoom + 640, (y - g.camY) * zoom + 360];
+    const fS = toS(fx, fy), flS = toS(g.flashAt.x, g.flashAt.y);
+    const segIdx = Math.floor(g.camX / 1280);
+    const vis = [segIdx - 1, segIdx, segIdx + 1].filter((s) => s >= 0 && s < 7);
+    // flecha en el borde hacia el personal que buscás
+    let edge = null;
+    if (!ended && (g.lift.stage === 1 || (g.lift.stage === 2 && g.off.stuck))) edge = g.off;
+    else if (!ended && g.kid.stage === 1 && !g.res[9]) edge = g.guards.reduce((a, b) => (Math.abs(b.x - g.x) < Math.abs(a.x - g.x) ? b : a));
+    let edgeOn = false, edgeL = '0px', edgeT = '0px', edgeFlip = 1, edgeDir = 'row';
+    if (edge) {
+      const s = toS(edge.x, edge.y - 40);
+      if (s[0] < 0 || s[0] > 1280) { edgeOn = true; const right = s[0] > 1280; edgeL = right ? '1170px' : '20px'; edgeT = P(Math.min(600, Math.max(140, s[1]))); edgeFlip = right ? 1 : -1; edgeDir = right ? 'row-reverse' : 'row'; }
+    }
+    const NT = {
+      subte: ['SUBTE · LÍNEA H', 'H', '#f2c200', '#10110c', '10 MIN', '#e8b33a'], ask: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '¿¿??', '#e6dfc0'], clock: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '', ''],
+      mom: ['MAMÁ', 'M', '#c96a8a', '#2a1018', '', ''], angry: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '', ''], call: ['TU JEFE · LLAMADA PERDIDA', 'J', '#6b4a7a', '#f0e6f5', '', ''],
+      late: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '!!!!', '#e05a4a'], group: ['GRUPO LABURO', 'G', '#2f7d6d', '#e6dfc0', '+' + (12 + Math.floor((600 - left) / 20)), '#7fd18a'], batt: ['BATERÍA', '!', '#e05a4a', '#10110c', left > 200 ? '15%' : '5%', '#e05a4a']
+    }[g.peekKind] || ['', '', '#3b3d2c', '#e6dfc0', '', ''];
+    const prog = Math.min(1, Math.max(0, g.x / (this.W - 90)));
+    const meters = Math.max(0, Math.round((this.W - 90 - g.x) / 14));
+    const gates = [
+      { y: 410, closed: !(g.res[8] === 'help' && g.sen.x > L(5, 760)), c: g.res[8] === 'help' ? '#7fd18a' : (g.readerFlash > 0 && Math.floor(g.t * 12) % 2 ? '#ffb09a' : '#e05a4a'), broken: false },
+      { y: 530, closed: true, c: '#e05a4a', broken: true },
+      { y: 654, closed: !this.gateOpen(), c: this.gateOpen() ? '#7fd18a' : '#e05a4a', broken: false }
+    ].map((q) => ({ rl: P(L(5, 708)), rt: P(q.y - 34), al: P(L(5, 690)), at: P(q.y - 6), xl: P(L(5, 710)), xt: P(q.y - 40), z: Math.round(q.y) - 1, closed: q.closed, c: q.c, broken: q.broken }));
+    const puddles = g.puddles.filter((p) => inView(p.x)).map((p) => ({ l: P(p.x - 34), t: P(p.y - 14), w: '68px', h: '28px', o: Math.max(0, Math.min(1, (18 - p.t) / 3, p.t * 3)).toFixed(2) }));
+    return {
+      cursor: m && m.type === 'trace' ? 'crosshair' : 'default',
+      scanlines: this.props.scanlines ?? true,
+      wx: wx + 'px', wy: wy + 'px', zoom: zoom.toFixed(4),
+      bgs: vis.map((s) => ({ src: this.SEGS[s].bg, alt: this.SEGS[s].alt, l: (s * 1280) + 'px' })),
+      fgs: vis.filter((s) => this.SEGS[s].fg).map((s) => ({ src: this.SEGS[s].fg, l: (s * 1280) + 'px' })),
+      glows: vis.map((s) => ({ src: this.SEGS[s].glow, l: (s * 1280) + 'px' })),
+      showTrain: g.trainX < 1400 && segIdx <= 1, trainX: Math.round(g.trainX / 4) * 4 + 'px',
+      worldFilter: 'grayscale(' + Math.min(1, g.ignores * 0.09).toFixed(2) + ') saturate(' + (1 + g.helps * 0.05).toFixed(2) + ') brightness(' + (1 - g.focus * 0.16).toFixed(2) + ')',
+      sosL: P(L(3, 626)), sosFx: !g.res[5] && g.act === 5 ? 'filter: drop-shadow(0 0 6px #e05a4a)' : F.phase === 1 ? 'filter: brightness(1.6) drop-shadow(0 0 10px #e05a4a)' : '',
+      puddles, gates, props, tags,
+      showDni: !g.dni.picked && !g.res[0], dniL: P(g.dni.x - 14), dniT: P(g.dni.y - 10), dniRot: Math.round((g.dni.rot % 40) - 20) + 'deg',
+      carryDni: g.dni.picked && !g.res[0], cdL: P(g.x + (g.face > 0 ? 6 : -24)), cdT: P(g.y - 44),
+      showNotes: g.res[3] !== 'ignore' && inView(L(2, 590)), noteColor: g.res[3] === 'help' ? '#e8b33a' : '#c9d97a',
+      notes: [{ l: P(L(2, 584)), t: '250px', d: '0s' }, { l: P(L(2, 604)), t: '242px', d: '.8s' }, { l: P(L(2, 570)), t: '260px', d: '1.6s' }],
+      coinInCase: !!g.art.coin, showCup: g.res[1] === 'help',
+      showSpot: !!tgt && inView(tgt.x), spotL: P(tgt ? tgt.x - 110 : 0), spotT: P(tgt ? tgt.y - 80 : 0), spotOp: (0.35 + 0.65 * (g.near || 0)).toFixed(2),
+      showPulse: !!tgt && g.phase === 'play' && !m && inView(tgt.x), pulseOp: (0.4 + 0.6 * (g.near || 0)).toFixed(2),
+      pulseL: P(tgt ? tgt.x - 45 : 0), pulseT: P(tgt ? tgt.y - 45 - (tgt.obj ? 0 : 30) : 0),
+      actors,
+      prl: P(g.x - 23), prt: P(g.y - 8),
+      showMe: g.sceneT < 3.2 && g.phase === 'play', meL: P(g.x - 10), meT: P(g.y - 100),
+      wtOn: !!g.walkTo, wtL: P(g.walkTo ? g.walkTo.x - 10 : 0), wtT: P(g.walkTo ? g.walkTo.y - 4 : 0),
+      pl: P(g.x - 24), pt: P(g.y - 76), pz: Math.round(g.y), psl: P(g.x - 17), pst: P(g.y - 4),
+      pbp: '-' + pframe * 48 + 'px -' + 12 * 80 + 'px', ptr,
+      parts: g.parts.map((p) => ({ l: P(p.x), t: P(p.y), s: P(p.s), c: p.c, o: Math.max(0, 1 - p.t / p.life).toFixed(2) })),
+      rhythmOn, rtL: P(g.x - 22), rtT: P(g.y - 60), rrS: P(rr), rrL: P(g.x - rr / 2), rrT: P(g.y - 38 - rr / 2), rdL: P(g.x - 20), rdT: P(g.y + 12), rhythmDots,
+      holdPct: Math.round(Math.min(1, Math.max(0, g.prog)) * 100) + '%',
+      altOn: g.phase === 'play' && !m && ((i === 2 && g.ask.contact) || (i === 6 && g.vend.kid)), alL: P(g.x - 48), arL: P(g.x + 27), alT: P(g.y - 58),
+      showBubble, bL: P(tgt ? tgt.x - 26 : 0), bT: P(bubbleTop),
+      bS: g.inRange ? '1' : '0.62', bOp: g.inRange ? '1' : '0.9', bRing: g.inRange ? '#e8b33a' : '#8f8c72', bGlow: g.inRange ? '.6' : '0',
+      iGrab: i === 0 && !g.dni.picked, iDni: i === 0 && g.dni.picked, iEye: i === 1, iExplain: i === 2, iNote: i === 3, iFood: i === 4, iAlarm: i === 5, iMoney: i === 6, iStaff: i === 7, iCard: i === 8, iHand: i === 9,
+      hintHold: holdScene && g.inRange && g.prog <= 0,
+      coinOn: !!(m && m.type === 'coin'), chL: P(L(4, 726)), coinL: P(m && m.cx ? m.cx - 12 : 0), coinT: P(m && m.cy ? m.cy - 12 : 0),
+      traceOn: !!(m && m.type === 'trace'), trLines, trStops, trTrail, trNextL: P(trNext[0]), trNextT: P(trNext[1]), trShake: m && m.shake > 0 ? (Math.round(g.t * 50) % 2 ? '8px' : '-8px') : '0px',
+      vigAt: Math.round(fS[0]) + 'px ' + Math.round(fS[1]) + 'px', vigIn: Math.round(62 - g.focus * 34) + '%',
+      flashAt: Math.round(flS[0]) + 'px ' + Math.round(flS[1]) + 'px',
+      warmOp: Math.max(0, g.warmT / 0.9).toFixed(2), grayOp: Math.max(0, g.grayT / 0.8).toFixed(2),
+      ffOn: g.ff > 0 && !ended, costTxt: g.costTxt,
+      timerColor: left > 240 ? '#e6dfc0' : left > 0 ? '#e8b33a' : '#e05a4a',
+      clock, phoneTime,
+      clockCls: !ended && (g.ff > 0 || (left < 120 && left > -30)) ? 'beat' : (g.lostT > 0 ? 'shk' : ''),
+      msgOn: (g.unread || 0) > 0, msgN: (g.unread || 0) > 99 ? '99+' : String(g.unread || 0), msgCls: g.newT > 0 || g.peekT > 0 ? 'shk' : '', msgScreen: g.peekT > 0 ? '#e8b33a' : '#0d100c', msgLabel: (g.unread || 0) + ' mensajes sin leer',
+      battW: Math.round(Math.max(1, (g.batt || 23) / 23 * 20)) + 'px', battC: (g.batt || 23) <= 10 ? '#e05a4a' : (g.batt || 23) <= 15 ? '#e8b33a' : '#bdb795', battTxt: (g.batt || 23) + '%', battCls: (g.batt || 23) <= 10 ? 'blink' : '', battLabel: 'Batería ' + (g.batt || 23) + ' por ciento',
+      presW: Math.round(Math.max(0, Math.min(1, left / 600)) * 76) + 'px', presC: left <= 0 ? '#55574a' : left < 120 ? '#e05a4a' : '#7fd18a', presLost: left <= 0, presCls: left <= 0 ? '' : left < 120 ? 'blink' : '', presLabel: left <= 0 ? 'Perdiste el presentismo' : 'Presentismo en juego',
+      routePct: Math.round(prog * 230) + 'px', routePos: Math.round(prog * 230) + 'px', meters: meters + ' m', routeLabel: 'Faltan ' + meters + ' metros para el andén de la línea H',
+      edgeOn, edgeL, edgeT, edgeFlip, edgeDir,
+      peekOn: g.peekT > 0 && !ended, peekClock: g.peekKind === 'clock', peekAngry: g.peekKind === 'angry', ntHeart: g.peekKind === 'mom', ntCall: g.peekKind === 'call', ntBatt: g.peekKind === 'batt',
+      ntWho: NT[0], ntAv: NT[1], ntAvBg: NT[2], ntAvFg: NT[3], ntIsText: !!NT[4], ntText: NT[4], ntColor: NT[5] || '#e6dfc0',
+      dismissPeek: (e) => { e.stopPropagation(); this.g.peekT = Math.min(this.g.peekT, 0); this.focus(); },
+      introOn: g.phase === 'intro',
+      endLate: ended && g.helps >= 5, endCancel: ended && g.helps < 5, ended,
+      resStr: g.res.map((r) => (r === 'help' ? 'h' : 'i')).join(''), slipStr: String(g.slips),
+      stageRef: this.stageRef,
+      pointerDown: (e) => this.pointer(e),
+      pointerMove: (e) => this.pointerMove(e),
+      pointerUp: () => this.pointerUp(),
+      keyDown: (e) => {
+        this.unlock();
+        const ARROWS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+        if (ARROWS.includes(e.key)) {
+          e.preventDefault();
+          if (!e.repeat) {
+            if (this.arrowInMini(e.key)) return;
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') this.alternate(e.key);
+          }
+          this.g.keys = { ...this.g.keys, [e.key]: true };
+        } else if (e.key === ' ' || e.code === 'Space') {
+          e.preventDefault();
+          if (!e.repeat) this.press();
+          this.g.hold = true;
+        } else if ((e.key === 'r' || e.key === 'R') && this.g.phase === 'end') { this.reset(); }
+        else if (e.key === 'Escape' && this.g.peekT > 0) this.g.peekT = 0;
+      },
+      keyUp: (e) => {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); const k = { ...this.g.keys }; delete k[e.key]; this.g.keys = k; }
+        else if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); this.g.hold = false; }
+      },
+      stopEv: (e) => { e.stopPropagation(); },
+      restart: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.holdStop(); this.reset(); this.focus(); }
+    };
+  }
+}
+</script>
+</body>
+</html>
