@@ -58,7 +58,7 @@ body{margin:0;background:#0a0a07}
 .seg{position:absolute;height:8px;transform-origin:0 50%;border-radius:4px}
 </style>
 </helmet>
-<div class="stage" tabIndex="0" ref="{{stageRef}}" onKeyDown="{{keyDown}}" onKeyUp="{{keyUp}}" onPointerDown="{{pointerDown}}" onPointerMove="{{pointerMove}}" onPointerUp="{{pointerUp}}" onPointerLeave="{{pointerUp}}" aria-label="Recorrido jugable: flechas o clic para caminar, espacio o clic sostenido para actuar" style="width: 1280px; height: 720px; position: relative; overflow: hidden; font-family: 'VT323', monospace; color: #e6dfc0; background: #0a0a07; cursor: {{cursor}}">
+<div class="stage" tabIndex="0" ref="{{stageRef}}" onKeyDown="{{keyDown}}" onKeyUp="{{keyUp}}" onPointerDown="{{pointerDown}}" onPointerMove="{{pointerMove}}" onPointerUp="{{pointerUp}}" onPointerCancel="{{pointerUp}}" aria-label="Recorrido jugable: flechas o clic para caminar, espacio o clic sostenido para actuar" style="width: 1280px; height: 720px; position: relative; overflow: hidden; font-family: 'VT323', monospace; color: #e6dfc0; background: #0a0a07; cursor: {{cursor}}; touch-action: none; user-select: none; -webkit-user-select: none">
 
 <!-- El mundo: un solo recorrido de la A a la H. La cámara sigue al personaje -->
 <div style="position: absolute; left: 0; top: 0; width: 8960px; height: 720px; transform-origin: 0 0; transform: translate({{wx}}, {{wy}}) scale({{zoom}}); filter: {{worldFilter}}">
@@ -349,7 +349,7 @@ class Component extends DCLogic {
       puerta: 'assets/snd/puerta.mp3', timbre: 'assets/snd/timbre.mp3', tren: 'assets/snd/tren.mp3', ventiladores: 'assets/snd/ventiladores.mp3'
     };
     // avisos del celular según lo que queda de tiempo: muchos, y cada vez más seguidos
-    this.NOTIFS = [[575, 'subte'], [520, 'ask'], [470, 'group'], [420, 'batt'], [370, 'clock'], [320, 'mom'], [270, 'group'], [220, 'angry'], [170, 'call'], [120, 'angry'], [80, 'batt'], [40, 'call'], [0, 'late'], [-40, 'angry'], [-80, 'call'], [-120, 'late'], [-170, 'angry'], [-220, 'call'], [-280, 'late'], [-340, 'angry'], [-400, 'late'], [-480, 'call'], [-560, 'late']];
+    this.NOTIFS = [[560, 'subte'], [420, 'ask'], [290, 'clock'], [170, 'group'], [60, 'angry'], [-60, 'late'], [-220, 'call'], [-400, 'late']];
     // plano de la combinación (coordenadas dentro del panel)
     this.TPATH = [[90, 150], [250, 150], [310, 205], [470, 205], [470, 305], [570, 360], [570, 445]];
     this.TLINES = [
@@ -719,6 +719,7 @@ class Component extends DCLogic {
   pointer(e) {
     const g = this.g;
     this.unlock(); this.focus();
+    try { if (g.mini && g.mini.type === 'trace') { e.preventDefault(); this.stage.setPointerCapture(e.pointerId); } } catch (err) {}
     if (g.phase !== 'play' || !this.stage) return;
     const { sx, sy, x, y } = this.pointerXY(e);
     const m = g.mini;
@@ -754,25 +755,33 @@ class Component extends DCLogic {
     const g = this.g;
     if (g.mouseHold) { g.hold = false; g.mouseHold = false; }
     const m = g.mini;
-    if (m && m.type === 'trace' && m.drag) { m.drag = false; if (m.step < this.TPATH.length - 1) this.traceFail(); }
+    if (m && m.type === 'trace' && m.drag) { m.drag = false; m.cur = null; }
   }
   /* ---- plano con el mouse: arrastrar por la línea correcta sin salirse ---- */
+  segDist(a, b, px, py) {
+    const dx = b[0] - a[0], dy = b[1] - a[1], len2 = dx * dx + dy * dy;
+    const t = Math.max(0, Math.min(1, ((px - a[0]) * dx + (py - a[1]) * dy) / len2));
+    const qx = a[0] + dx * t, qy = a[1] + dy * t;
+    return { d: Math.hypot(px - qx, py - qy), t, q: [qx, qy] };
+  }
   traceDown(px, py) {
-    const m = this.g.mini, n = this.TPATH[m.step];
-    if (Math.hypot(px - n[0], py - n[1]) < 26) { m.drag = true; m.cur = [px, py]; }
+    const m = this.g.mini, P = this.TPATH;
+    if (m.step >= P.length - 1) return;
+    const n = P[m.step];
+    const onSeg = this.segDist(P[m.step], P[m.step + 1], px, py).d < 24;
+    if (Math.hypot(px - n[0], py - n[1]) < 34 || onSeg) { m.drag = true; m.cur = n; this.traceMove(px, py); }
   }
   traceMove(px, py) {
     const m = this.g.mini, P = this.TPATH;
-    if (m.step >= P.length - 1) return;
-    const a = P[m.step], b = P[m.step + 1];
-    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
-    let t = ((px - a[0]) * dx + (py - a[1]) * dy) / (len * len);
-    t = Math.max(0, Math.min(1, t));
-    const qx = a[0] + dx * t, qy = a[1] + dy * t;
-    const off = Math.hypot(px - qx, py - qy);
-    if (off > 22 && Math.hypot(px - a[0], py - a[1]) > 22) { this.traceFail(); return; }
-    m.cur = [qx, qy];
-    if (Math.hypot(px - b[0], py - b[1]) < 16) this.traceStep();
+    // avanzar todos los tramos que el mouse ya recorrió (aunque vaya rápido)
+    for (let guard = 0; guard < 6 && m.step < P.length - 1; guard++) {
+      const cur = this.segDist(P[m.step], P[m.step + 1], px, py);
+      const nxt = m.step + 2 < P.length ? this.segDist(P[m.step + 1], P[m.step + 2], px, py) : null;
+      if (cur.t > 0.98 || Math.hypot(px - P[m.step + 1][0], py - P[m.step + 1][1]) < 20 || (nxt && nxt.d < 22 && cur.t > 0.6)) { this.traceStep(); continue; }
+      if (cur.d > 34) { this.traceFail(); return; }
+      m.cur = cur.q;
+      return;
+    }
   }
   traceStep() {
     const m = this.g.mini;
@@ -784,7 +793,8 @@ class Component extends DCLogic {
   traceFail() {
     const m = this.g.mini;
     if (!m) return;
-    m.step = 0; m.drag = false; m.cur = null; m.shake = 0.3;
+    // te saliste de la línea: volvés a la última estación que habías alcanzado
+    m.drag = false; m.cur = null; m.shake = 0.3;
     this.oops();
   }
 
@@ -812,7 +822,9 @@ class Component extends DCLogic {
     else g.left -= (this.props.clockRate ?? 5) * dt;
     this.NOTIFS.forEach(([th, kind]) => { if (g.left <= th && !g.peeked[th]) { g.peeked[th] = true; g.notifQ.push(kind); } });
     g.peekT -= dt;
-    if (g.peekT <= -0.4 && g.notifQ.length) { g.unread = (g.unread || 0) + (g.peekKind === 'subte' ? 0 : 1 + Math.floor(Math.random() * 3)); g.newT = 1.2; g.peekKind = g.notifQ.shift(); g.peekT = 3.4; g.buzzT = 0; this.ding(); g.shakeT = Math.max(g.shakeT, 0.35); }
+    const busy = !!g.mini || (g.hold && g.prog > 0) || g.stun > 0;
+    if (busy && g.peekT > 0) g.peekT = 0;
+    if (!busy && g.peekT <= -2.5 && g.notifQ.length) { g.unread = (g.unread || 0) + (g.peekKind === 'subte' ? 0 : 1 + Math.floor(Math.random() * 3)); g.newT = 1.2; g.peekKind = g.notifQ.shift(); g.peekT = 2.6; g.buzzT = 0; this.ding(); g.shakeT = Math.max(g.shakeT, 0.35); }
     if (g.peekT > 0) { g.buzzT -= dt; if (g.buzzT <= 0) { g.buzzT = 0.75; this.vibrate(); } }
     if (g.shakeT > 0) g.shakeT -= dt;
     // movimiento
@@ -1246,7 +1258,7 @@ class Component extends DCLogic {
     if (!b) return true;
     const dx = b[0] - a[0], dy = b[1] - a[1];
     const want = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'ArrowRight' : 'ArrowLeft') : (dy > 0 ? 'ArrowDown' : 'ArrowUp');
-    if (key === want) this.traceStep(); else this.traceFail();
+    if (key === want) this.traceStep(); else { this.traceFail(); if (m.step > 0) m.step--; }
     return true;
   }
   alternate(key) {

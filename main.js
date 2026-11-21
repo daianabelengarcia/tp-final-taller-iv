@@ -22,7 +22,7 @@ class App extends Component {
     super();
     let sound = true;
     try { sound = localStorage.getItem('combinacion-sound') !== 'off'; } catch (e) {}
-    this.state = { screen: 'title', sound };
+    this.state = { screen: 'game', sound };  // sin pantalla de título: arranca directo en el celular
     this.start = this.start.bind(this);
     this.onKey = (e) => { if (this.state.screen === 'title' && !e.repeat) { e.preventDefault(); this.start(); } };
   }
