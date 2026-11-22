@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <title>Final: llegás tarde</title>
-<script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
@@ -13,11 +12,17 @@ body{margin:0}
 </style>
 </helmet>
 <div style="width: 1280px; height: 720px; position: relative; overflow: hidden; font-family: 'VT323', monospace; color: #e6dfc0; background: #0a0a07">
-<img src="assets/img/tramo6.png" alt="Andén de la línea H con gente esperando" style="position: absolute; inset: 0; width: 1280px; height: 720px; image-rendering: pixelated; filter: brightness(.42)">
+<img src="assets/img/tramo6.png" alt="Andén de la línea H" style="position: absolute; inset: 0; width: 1280px; height: 720px; image-rendering: pixelated; filter: brightness(.42)">
+
+<!-- Cartel del andén (tapa el grafiti que parecía un puntaje) -->
+<div role="img" aria-label="Cartel del andén: 5'00"" style="position: absolute; left: 800px; top: 86px; width: 250px; height: 62px; background: #0b0c09; box-shadow: 0 0 0 3px #3b3d2c, 0 0 0 5px #070705; display: flex; align-items: center; gap: 14px; padding: 0 14px; box-sizing: border-box">
+<div style="width: 32px; height: 32px; border-radius: 50%; background: #f2c200; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 16px; color: #10110c">H</div>
+<span class="" style="font-family: 'VT323', monospace; font-size: 42px; line-height: 1; color: #e8b33a">5'00"</span>
+</div>
 
 <!-- En el camino: las 10 situaciones, sin frases -->
 <div style="position: absolute; left: 28px; top: 96px; width: 440px; box-sizing: border-box; padding: 20px 18px 18px; background: rgba(14,15,10,.94); box-shadow: inset 0 0 0 2px #3b3d2c, inset 0 3px 0 0 #55574a, 0 8px 24px rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 14px">
-<span style="font-family: 'Silkscreen', monospace; font-size: 12px; letter-spacing: 3px; color: #8f8c72">LO QUE MOSTRASTE</span>
+<sc-if value="{{someOn}}" hint-placeholder-val="{{ true }}"><span style="font-family: 'Silkscreen', monospace; font-size: 12px; letter-spacing: 3px; color: #8f8c72">LO QUE MOSTRASTE</span></sc-if>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px">
 <sc-for list="{{lines}}" as="ln" hint-placeholder-count="5">
 <div style="display: flex; align-items: center; gap: 12px; opacity: {{ln.op}}">
@@ -40,12 +45,11 @@ body{margin:0}
 </div>
 </sc-for>
 </div>
-<sc-if value="{{noneOn}}" hint-placeholder-val="{{ false }}"><div style="height: 38px; display: flex; align-items: center; gap: 10px"><div style="width: 38px; height: 38px; background: #16170f; box-shadow: 0 0 0 3px #070705"></div><span style="font-size: 30px; color: #6b6a55">...</span></div></sc-if>
-<sc-if value="{{slipOn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 22px; color: #8ec8f0">{{slipTxt}}</span></sc-if>
+<sc-if value="{{slipOn}}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="Resbalones en el piso mojado: {{slipTxt}}" style="display: flex; align-items: center; gap: 10px"><img src="assets/img/mojado.png" alt="" style="width: 44px; height: auto; image-rendering: pixelated"><span style="font-size: 24px; color: #8ec8f0">{{slipTxt}}</span></div></sc-if>
 <div style="height: 2px; background: #2c2d21"></div>
 <div style="display: flex; justify-content: space-between; align-items: baseline">
 <span style="font-size: 40px; line-height: .8; color: #e8b33a">{{count}}</span>
-<span style="font-size: 30px; color: #e05a4a">{{total}}</span>
+<div role="img" aria-label="Tiempo que diste: {{total}}" style="display: flex; align-items: center; gap: 8px; opacity: {{totalOp}}"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 10 10" shape-rendering="crispEdges"><rect x="1" y="2" width="3" height="1" fill="#e8b33a"></rect><rect x="6" y="2" width="3" height="1" fill="#e8b33a"></rect><rect x="0" y="3" width="10" height="2" fill="#e8b33a"></rect><rect x="1" y="5" width="8" height="1" fill="#e8b33a"></rect><rect x="2" y="6" width="6" height="1" fill="#e8b33a"></rect><rect x="3" y="7" width="4" height="1" fill="#e8b33a"></rect><rect x="4" y="8" width="2" height="1" fill="#e8b33a"></rect></svg><span style="font-size: 32px; color: #e8b33a">{{total}}</span></div>
 </div>
 </div>
 
@@ -56,8 +60,8 @@ body{margin:0}
 <span>{{hora}}</span>
 <div style="display: flex; align-items: center; gap: 8px">
 <svg role="img" aria-label="Señal baja" width="18" height="12" viewBox="0 0 9 6" shape-rendering="crispEdges"><rect x="0" y="4" width="2" height="2" fill="#bdb795"></rect><rect x="3" y="2" width="2" height="4" fill="#bdb795"></rect><rect x="6" y="0" width="2" height="6" fill="#3b3d2c"></rect></svg>
-<span>19%</span>
-<svg role="img" aria-label="Batería 19 por ciento" width="28" height="16" viewBox="0 0 14 8" shape-rendering="crispEdges"><rect x="0" y="0" width="12" height="1" fill="#bdb795"></rect><rect x="0" y="7" width="12" height="1" fill="#bdb795"></rect><rect x="0" y="0" width="1" height="8" fill="#bdb795"></rect><rect x="11" y="0" width="1" height="8" fill="#bdb795"></rect><rect x="12" y="2" width="2" height="4" fill="#bdb795"></rect><rect x="2" y="2" width="2" height="4" fill="#e05a4a"></rect></svg>
+<span>{{batt}}%</span>
+<svg role="img" aria-label="Batería {{batt}} por ciento" width="28" height="16" viewBox="0 0 14 8" shape-rendering="crispEdges"><rect x="0" y="0" width="12" height="1" fill="#bdb795"></rect><rect x="0" y="7" width="12" height="1" fill="#bdb795"></rect><rect x="0" y="0" width="1" height="8" fill="#bdb795"></rect><rect x="11" y="0" width="1" height="8" fill="#bdb795"></rect><rect x="12" y="2" width="2" height="4" fill="#bdb795"></rect><rect x="2" y="2" width="2" height="4" fill="#e05a4a"></rect></svg>
 </div>
 </div>
 
@@ -73,16 +77,15 @@ body{margin:0}
 </div>
 
 <div role="img" aria-label="Lo que hiciste en las 10 situaciones" style="display: flex; gap: 5px; margin-top: 34px">
-<sc-for list="{{res}}" as="r" hint-placeholder-count="10"><div style="width: 15px; height: 15px; background: {{r.bg}}; box-shadow: 0 0 0 3px #070705"></div></sc-for>
+<sc-for list="{{res}}" as="r" hint-placeholder-count="10"><div style="width: 15px; height: 15px; background: {{r.bg}}; box-shadow: 0 0 0 3px #070705; display: flex; align-items: center; justify-content: center"><sc-if value="{{r.h}}" hint-placeholder-val="{{ false }}"><div style="width: 5px; height: 5px; background: #10110c"></div></sc-if></div></sc-for>
 </div>
 
-<div class="shake" style="align-self: stretch; margin: 30px 14px 0; background: #1c2119; border-radius: 10px; padding: 12px; display: flex; gap: 12px; align-items: center">
+<div class="shake" style="align-self: stretch; margin: 30px 14px 0; background: #1c2119; padding: 12px; display: flex; gap: 12px; align-items: center">
 <div style="width: 38px; height: 38px; border-radius: 50%; background: #6b4a7a; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 14px; color: #f0e6f5">J</div>
 <div style="display: flex; flex-direction: column; gap: 4px; flex: 1">
 <span style="font-family: 'Silkscreen', monospace; font-size: 10px; letter-spacing: 1px; color: #bdb795">TU JEFE · AHORA</span>
-<span style="font-size: 24px; line-height: 1; color: #e6dfc0">Llegás tarde.</span>
 </div>
-<svg role="img" aria-label="Emoji de reloj despertador" width="44" height="44" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="9" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="4" y="1" width="4" height="1" fill="#e05a4a"></rect><rect x="2" y="2" width="8" height="1" fill="#e05a4a"></rect><rect x="1" y="3" width="10" height="6" fill="#e05a4a"></rect><rect x="2" y="9" width="8" height="1" fill="#e05a4a"></rect><rect x="4" y="10" width="4" height="1" fill="#e05a4a"></rect><rect x="4" y="2" width="4" height="1" fill="#f4f0dc"></rect><rect x="3" y="3" width="6" height="1" fill="#f4f0dc"></rect><rect x="2" y="4" width="8" height="4" fill="#f4f0dc"></rect><rect x="3" y="8" width="6" height="1" fill="#f4f0dc"></rect><rect x="4" y="9" width="4" height="1" fill="#f4f0dc"></rect><rect x="6" y="3" width="1" height="3" fill="#10110c"></rect><rect x="6" y="6" width="2" height="1" fill="#10110c"></rect><rect x="2" y="11" width="1" height="1" fill="#e05a4a"></rect><rect x="9" y="11" width="1" height="1" fill="#e05a4a"></rect></svg>
+<svg role="img" aria-label="Un reloj" width="56" height="56" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="9" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="4" y="1" width="4" height="1" fill="#e05a4a"></rect><rect x="2" y="2" width="8" height="1" fill="#e05a4a"></rect><rect x="1" y="3" width="10" height="6" fill="#e05a4a"></rect><rect x="2" y="9" width="8" height="1" fill="#e05a4a"></rect><rect x="4" y="10" width="4" height="1" fill="#e05a4a"></rect><rect x="4" y="2" width="4" height="1" fill="#f4f0dc"></rect><rect x="3" y="3" width="6" height="1" fill="#f4f0dc"></rect><rect x="2" y="4" width="8" height="4" fill="#f4f0dc"></rect><rect x="3" y="8" width="6" height="1" fill="#f4f0dc"></rect><rect x="4" y="9" width="4" height="1" fill="#f4f0dc"></rect><rect x="6" y="3" width="1" height="3" fill="#10110c"></rect><rect x="6" y="6" width="2" height="1" fill="#10110c"></rect><rect x="2" y="11" width="1" height="1" fill="#e05a4a"></rect><rect x="9" y="11" width="1" height="1" fill="#e05a4a"></rect></svg>
 </div>
 
 </div>
@@ -90,7 +93,7 @@ body{margin:0}
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"res":{"editor":null,"tsType":"string"},"slip":{"editor":null,"tsType":"string"},"hora":{"editor":null,"tsType":"string"},"left":{"editor":null,"tsType":"string"},"$preview":{"width":1280,"height":720}}'>
+<script type="text/x-dc" data-dc-script data-props='{"res":{"editor":null,"tsType":"string"},"slip":{"editor":null,"tsType":"string"},"hora":{"editor":null,"tsType":"string"},"batt":{"editor":null,"tsType":"string"},"$preview":{"width":1280,"height":720}}'>
 class Component extends DCLogic {
   renderVals() {
     const s = String(this.props.res || 'hihihhhiih').padEnd(10, 'i').slice(0, 10).split('');
@@ -99,10 +102,10 @@ class Component extends DCLogic {
     const slips = parseInt(this.props.slip || '0', 10) || 0;
     const sec = slips * 30;
     return {
-      res: s.map((c) => ({ bg: c === 'h' ? '#e8b33a' : '#4a4936' })),
+      res: s.map((c) => ({ bg: c === 'h' ? '#e8b33a' : '#6b6a55', h: c === 'h' })),
       lines: s.map((c, i) => Object.assign({ help: c === 'h', text: W[i], bg: '#2a2a1c', f: 'none' }, Object.fromEntries(W.map((_, k) => ['k' + k, k === i])))).filter((l) => l.help),
-      noneOn: n === 0, hora: this.props.hora || '09:02',
-      count: n + ' / 10', total: n ? '-' + (n * 2) + "'00\"" : "0'00\"",
+      someOn: n > 0, hora: this.props.hora || '09:00', batt: this.props.batt || '19',
+      count: n + ' / 10', total: (n * 2) + "'00\"", totalOp: n ? '1' : '.4',
       slipOn: slips > 0, slipTxt: '-' + Math.floor(sec / 60) + "'" + String(sec % 60).padStart(2, '0') + '"'
     };
   }

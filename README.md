@@ -1,5 +1,9 @@
 # Combinación
 
+Jugar: https://daianabelengarcia.github.io/tp-final-taller-iv/
+
+Trabajo final de Taller IV (2026).
+
 Un juego corto y sin palabras en el subte de Buenos Aires.
 
 Te bajás de la línea A y el tren de la H sale en 10 minutos. El recorrido es uno solo, de punta a punta, y en el camino pasan cosas que casi nadie mira: un documento en el piso, una persona durmiendo en un rincón, alguien que pregunta por la línea, un artista, alguien buscando en la basura, una pelea, un vendedor con su hijo, una persona que no puede usar el ascensor, una señora a la que no le anda la tarjeta y un niño que perdió a quien lo acompañaba. Además hay un pasillo recién trapeado y una fila en el molinete.
@@ -10,9 +14,9 @@ El reloj marca cuánto falta para que salga el tren de la H y solo baja cuando p
 
 - Flechas o clic para caminar.
 - Espacio o clic sostenido para actuar.
-- En el plano, arrastrá con el mouse por el camino correcto.
-- Escape cierra lo que esté abierto o pone pausa (también P).
-- R para volver a empezar.
+- En el plano, arrastrá con el mouse por el camino correcto o seguilo con las flechas.
+- Escape cierra lo que esté abierto o pone pausa (también P o el botón de pausa).
+- R vuelve a empezar desde la pausa o el final.
 
 ## Créditos
 
@@ -22,3 +26,7 @@ El reloj marca cuánto falta para que salga el tren de la H y solo baja cuando p
 - Preact (licencia MIT, ver `vendor/PREACT-LICENSE`).
 
 El sitio es estático: `index.html` carga las pantallas de `dc/` con un intérprete chico (`runtime.js`). Necesita un servidor web (GitHub Pages, o `python3 -m http.server` en la carpeta): abriendo el archivo directo desde la computadora no carga.
+
+## Cómo se arma
+
+`build.py` toma las pantallas del canvas de Claude Design y sus recursos y genera `dc/`, `assets/` y `vendor/`. Necesita la carpeta de trabajo original (con `gui/project`, `blobs/` y `npm/`), así que no se puede correr solo desde este repositorio; para jugar o publicar alcanza con los archivos que ya están acá.

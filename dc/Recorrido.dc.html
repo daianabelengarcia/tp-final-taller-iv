@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <title>Recorrido jugable</title>
-<script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
@@ -57,7 +56,8 @@ body{margin:0;background:#0a0a07}
 .puddle{position:absolute;border-radius:50%;background:radial-gradient(ellipse at 40% 40%,rgba(220,240,255,.55),rgba(140,180,210,.32) 45%,rgba(90,130,160,.18) 70%,rgba(90,130,160,0) 72%);pointer-events:none}
 .tape{background:repeating-linear-gradient(135deg,#f2c200 0 14px,#10110c 14px 28px)}
 .seg{position:absolute;height:8px;transform-origin:0 50%;border-radius:4px}
-@media (prefers-reduced-motion: reduce){.buzz,.blink,.redpulse,.alarm,.shk,.beat,.grr,.float,.note,.pulse,.glow,.chl,.chr,.pop,.fadein{animation:none !important}}
+@media (prefers-reduced-motion: reduce){.buzz,.blink,.redpulse,.alarm,.shk,.beat,.grr,.float,.note,.pulse,.glow,.chl,.chr,.pop,.fadein,.vhs,.tag,.tagin,.shake{animation:none !important}}
+.pbtn:focus-visible{box-shadow:0 0 0 2px #3b3d2c,0 0 0 4px #e8b33a !important;outline:none}
 </style>
 </helmet>
 <div class="stage" role="application" tabIndex="0" ref="{{stageRef}}" onKeyDown="{{keyDown}}" onKeyUp="{{keyUp}}" onPointerDown="{{pointerDown}}" onPointerMove="{{pointerMove}}" onPointerUp="{{pointerUp}}" onPointerCancel="{{pointerUp}}" aria-label="Recorrido jugable: flechas o clic para caminar, espacio o clic sostenido para actuar, Escape para cerrar o pausar" style="width: 1280px; height: 720px; position: relative; overflow: hidden; font-family: 'VT323', monospace; color: #e6dfc0; background: #0a0a07; cursor: {{cursor}}; touch-action: none; user-select: none; -webkit-user-select: none">
@@ -68,6 +68,8 @@ body{margin:0;background:#0a0a07}
 <img class="bg" src="{{b.src}}" alt="{{b.alt}}" style="position: absolute; left: {{b.l}}; top: 0; width: 1280px; height: 720px">
 </sc-for>
 <sc-if value="{{showTrain}}" hint-placeholder-val="{{ false }}"><img class="layer" src="assets/img/tren-a.png" alt="Tren de la línea A que se va" style="left: {{trainX}}"></sc-if>
+<!-- Reloj de la estación (hall): misma hora que el celular -->
+<div role="img" aria-label="Reloj de la estación: {{phoneTime}}" style="position: absolute; left: 5884px; top: 94px; width: 80px; height: 40px; background: #111210; display: flex; align-items: center; justify-content: center; font-family: 'VT323', monospace; font-size: 34px; line-height: 1; color: #e05a4a; text-shadow: 0 0 6px rgba(224,90,74,.7)">{{phoneTime}}</div>
 <sc-if value="{{showTrainH}}" hint-placeholder-val="{{ false }}"><img class="layer" src="assets/img/tren-h.png" alt="Tren de la línea H en el andén" style="left: {{trainHX}}"></sc-if>
 
 
@@ -239,13 +241,13 @@ body{margin:0;background:#0a0a07}
 <div style="position: relative; width: 230px; height: 26px">
 <div style="position: absolute; left: 0; right: 0; top: 11px; height: 4px; background: #2c2d21"></div>
 <div style="position: absolute; left: 0; width: {{routePct}}; top: 11px; height: 4px; background: #e6dfc0"></div>
-<div style="position: absolute; left: 164px; top: 6px; width: 3px; height: 14px; background: #b8bab4"></div>
+<svg role="img" aria-label="Molinetes" style="position: absolute; left: 158px; top: 4px" width="14" height="18" viewBox="0 0 7 9" shape-rendering="crispEdges"><rect x="0" y="2" width="2" height="7" fill="#b8bab4"></rect><rect x="5" y="2" width="2" height="7" fill="#b8bab4"></rect><rect x="2" y="4" width="3" height="1" fill="#e05a4a"></rect><rect x="0" y="1" width="2" height="1" fill="#7fd18a"></rect><rect x="5" y="1" width="2" height="1" fill="#7fd18a"></rect></svg>
 <div style="position: absolute; left: {{routePos}}; top: 3px; width: 12px; height: 20px; margin-left: -6px; background: #3b70bc; box-shadow: 0 0 0 2px #070705, 0 0 0 4px #e6dfc0"></div>
 </div>
 <div style="width: 26px; height: 26px; border-radius: 50%; background: #f2c200; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 13px; color: #10110c; box-shadow: 0 0 0 3px #070705">H</div>
 <span style="font-size: 24px; line-height: 1; color: #bdb795; min-width: 64px">{{meters}}</span>
 </div>
-<div style="display: flex; align-items: center; gap: 16px; zoom: 1.35; padding-top: 4px">
+<div style="display: flex; align-items: center; gap: 16px; zoom: 1.5; padding-top: 4px">
 <div class="{{msgCls}}" role="img" aria-label="{{msgLabel}}" style="position: relative; width: 22px; height: 32px; background: #1d1e18; box-shadow: 0 0 0 2px #070705, 0 0 0 4px #55574a; border-radius: 4px">
 <div style="position: absolute; left: 3px; top: 4px; right: 3px; bottom: 6px; background: {{msgScreen}}"></div>
 <sc-if value="{{msgOn}}" hint-placeholder-val="{{ true }}"><div style="position: absolute; left: 12px; top: -10px; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 10px; background: #e05a4a; box-shadow: 0 0 0 2px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 10px; color: #f4f0dc">{{msgN}}</div></sc-if>
@@ -271,11 +273,12 @@ body{margin:0;background:#0a0a07}
 </sc-if>
 
 <!-- Pausa -->
-<button aria-label="Pausa" onPointerDown="{{stopEv}}" onClick="{{togglePause}}" style="all: unset; cursor: pointer; position: absolute; right: 24px; bottom: 22px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(14,15,10,.85); box-shadow: 0 0 0 2px #3b3d2c; z-index: 1002"><div style="width: 6px; height: 16px; background: #e6dfc0"></div><div style="width: 6px; height: 16px; background: #e6dfc0"></div></button>
+<button class="pbtn" aria-label="{{pauseLabel}}" aria-pressed="{{pausePressed}}" onPointerDown="{{stopEv}}" onClick="{{togglePause}}" style="all: unset; cursor: pointer; position: absolute; left: 86px; bottom: 24px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(14,15,10,.85); box-shadow: 0 0 0 2px #3b3d2c; z-index: 1002"><div style="width: 6px; height: 16px; background: #e6dfc0"></div><div style="width: 6px; height: 16px; background: #e6dfc0"></div></button>
 <sc-if value="{{pauseOn}}" hint-placeholder-val="{{ false }}">
 <div style="position: absolute; inset: 0; background: rgba(7,7,5,.72); z-index: 1002; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; pointer-events: none">
 <div style="display: flex; gap: 16px"><div style="width: 26px; height: 80px; background: #e6dfc0; box-shadow: 0 0 0 4px #070705"></div><div style="width: 26px; height: 80px; background: #e6dfc0; box-shadow: 0 0 0 4px #070705"></div></div>
 <div style="display: flex; gap: 10px; align-items: center"><span class="key">ESC</span><span class="key">P</span></div>
+<div style="display: flex; gap: 10px; align-items: center; margin-top: 6px"><span class="key">R</span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 11 11" shape-rendering="crispEdges"><rect x="3" y="1" width="5" height="1" fill="#e6dfc0"></rect><rect x="2" y="2" width="1" height="1" fill="#e6dfc0"></rect><rect x="8" y="2" width="1" height="1" fill="#e6dfc0"></rect><rect x="1" y="3" width="1" height="5" fill="#e6dfc0"></rect><rect x="9" y="3" width="1" height="2" fill="#e6dfc0"></rect><rect x="2" y="8" width="1" height="1" fill="#e6dfc0"></rect><rect x="3" y="9" width="5" height="1" fill="#e6dfc0"></rect><rect x="8" y="8" width="1" height="1" fill="#e6dfc0"></rect><rect x="7" y="4" width="4" height="1" fill="#e6dfc0"></rect><rect x="9" y="5" width="1" height="1" fill="#e6dfc0"></rect></svg></div>
 </div>
 </sc-if>
 
@@ -292,15 +295,15 @@ body{margin:0;background:#0a0a07}
 </div>
 </sc-if>
 
-<!-- Notificación: grande, vibra, titila y tapa la vista (clic para cerrarla) -->
+<!-- Notificación: vibra y titila arriba, pero no frena nada: los clics pasan de largo (Esc la cierra) -->
 <sc-if value="{{peekOn}}" hint-placeholder-val="{{ false }}">
 <div class="redpulse" style="position: absolute; inset: 0; box-shadow: inset 0 0 0 8px #e05a4a, inset 0 0 90px rgba(224,90,74,.6); pointer-events: none; z-index: 999"></div>
-<div style="position: absolute; left: 500px; top: 22px; width: 520px; z-index: 1001" onPointerDown="{{dismissPeek}}">
+<div style="position: absolute; left: 500px; top: 22px; width: 520px; z-index: 1001; pointer-events: none">
 <div class="pop">
-<div class="buzz alarm" style="background: #10110c; border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 16px; cursor: pointer">
+<div class="buzz alarm" style="background: #10110c; padding: 12px 18px; display: flex; align-items: center; gap: 16px">
 <div style="width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; background: {{ntAvBg}}; color: {{ntAvFg}}; box-shadow: 0 0 0 4px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 28px">{{ntAv}}</div>
 <div style="display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0">
-<div style="display: flex; justify-content: space-between; align-items: center"><span style="font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 15px; letter-spacing: 2px; color: #e6dfc0">{{ntWho}}</span><span style="font-size: 24px; color: #8f8c72">{{phoneTime}}</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center"><span style="font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 17px; letter-spacing: 1px; color: #f4f0dc">{{ntWho}}</span><span style="font-size: 24px; color: #8f8c72">{{phoneTime}}</span></div>
 <div style="display: flex; align-items: center; gap: 14px; min-height: 56px">
 <sc-if value="{{ntIsText}}" hint-placeholder-val="{{ false }}"><span style="font-size: 52px; line-height: .8; color: {{ntColor}}">{{ntText}}</span></sc-if>
 <sc-if value="{{peekClock}}" hint-placeholder-val="{{ true }}"><svg role="img" aria-label="Un reloj" width="56" height="56" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="9" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="2" y="2" width="8" height="1" fill="#e05a4a"></rect><rect x="1" y="3" width="10" height="6" fill="#e05a4a"></rect><rect x="2" y="9" width="8" height="1" fill="#e05a4a"></rect><rect x="2" y="4" width="8" height="4" fill="#f4f0dc"></rect><rect x="3" y="3" width="6" height="1" fill="#f4f0dc"></rect><rect x="3" y="8" width="6" height="1" fill="#f4f0dc"></rect><rect x="6" y="3" width="1" height="3" fill="#10110c"></rect><rect x="6" y="6" width="2" height="1" fill="#10110c"></rect></svg></sc-if>
@@ -321,7 +324,7 @@ body{margin:0;background:#0a0a07}
 <div style="position: absolute; left: 160px; top: 110px; width: 960px; height: 500px; background: #0f110d; box-shadow: 0 0 0 4px #3b3d2c, 0 0 0 8px #070705, 0 20px 60px rgba(0,0,0,.6); z-index: 970; transform: translateX({{trShake}}); pointer-events: none; overflow: hidden">
 <sc-for list="{{trLines}}" as="ln" hint-placeholder-count="10"><div class="seg" style="left: {{ln.l}}; top: {{ln.t}}; width: {{ln.w}}; transform: rotate({{ln.a}}); background: {{ln.c}}; opacity: {{ln.o}}"></div></sc-for>
 <sc-for list="{{trStops}}" as="st" hint-placeholder-count="12"><div style="position: absolute; left: {{st.l}}; top: {{st.t}}; width: 16px; height: 16px; margin: -8px 0 0 -8px; background: #0f110d; box-shadow: inset 0 0 0 4px {{st.c}}"></div></sc-for>
-<sc-for list="{{trTrail}}" as="tl" hint-placeholder-count="0"><div class="seg" style="left: {{tl.l}}; top: {{tl.t}}; width: {{tl.w}}; transform: rotate({{tl.a}}); background: #f4f0dc; height: 12px; margin-top: -2px; box-shadow: 0 0 12px rgba(244,240,220,.8)"></div></sc-for>
+<sc-for list="{{trTrail}}" as="tl" hint-placeholder-count="0"><div class="seg" style="left: {{tl.l}}; top: {{tl.t}}; width: {{tl.w}}; transform: rotate({{tl.a}}); background: {{tl.c}}; height: 12px; margin-top: -2px; box-shadow: 0 0 12px {{tl.c}}"></div></sc-for>
 <div class="blink" style="position: absolute; left: {{trNextL}}; top: {{trNextT}}; width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 3px solid #f4f0dc; border-radius: 50%; box-sizing: border-box"></div>
 <div style="position: absolute; left: 66px; top: 116px; width: 30px; height: 30px; border-radius: 50%; background: #3bb3e6; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 14px; color: #10110c; box-shadow: 0 0 0 3px #070705">A</div>
 <div style="position: absolute; left: 486px; top: 164px; width: 30px; height: 30px; border-radius: 50%; background: #f2c200; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 14px; color: #10110c; box-shadow: 0 0 0 3px #070705">H</div>
@@ -329,6 +332,8 @@ body{margin:0;background:#0a0a07}
 <div style="position: absolute; right: 22px; bottom: 18px; display: flex; align-items: center; gap: 10px">
 <svg aria-hidden="true" width="26" height="36" viewBox="0 0 8 11" shape-rendering="crispEdges"><rect x="0" y="0" width="8" height="11" fill="#070705"></rect><rect x="1" y="1" width="6" height="9" fill="#e6dfc0"></rect><rect x="1" y="1" width="3" height="4" fill="#e8b33a"></rect><rect x="4" y="1" width="1" height="4" fill="#070705"></rect></svg>
 <svg aria-hidden="true" width="60" height="20" viewBox="0 0 30 10" shape-rendering="crispEdges"><rect x="0" y="4" width="24" height="2" fill="#e6dfc0"></rect><rect x="24" y="2" width="2" height="6" fill="#e6dfc0"></rect><rect x="26" y="3" width="2" height="4" fill="#e6dfc0"></rect><rect x="28" y="4" width="2" height="2" fill="#e6dfc0"></rect></svg>
+<span style="font-family: 'Silkscreen', monospace; font-size: 10px; color: #6b6a55">/</span>
+<div style="display: grid; grid-template-columns: repeat(3, 16px); grid-template-rows: 16px 16px; gap: 2px"><span></span><span class="key" style="height: 16px; min-width: 16px; padding: 0">&#9650;</span><span></span><span class="key" style="height: 16px; min-width: 16px; padding: 0">&#9664;</span><span class="key" style="height: 16px; min-width: 16px; padding: 0">&#9660;</span><span class="key" style="height: 16px; min-width: 16px; padding: 0">&#9654;</span></div>
 </div>
 </div>
 </sc-if>
@@ -350,13 +355,13 @@ body{margin:0;background:#0a0a07}
 <!-- Finales -->
 <div aria-live="polite" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">{{liveMsg}}</div>
 <sc-if value="{{endLate}}" hint-placeholder-val="{{ false }}">
-<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalTarde" res="{{resStr}}" slip="{{slipStr}}" hora="{{horaStr}}" left="{{leftStr}}" hint-size="1280px,720px"></dc-import></div>
+<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalTarde" res="{{resStr}}" slip="{{slipStr}}" hora="{{horaStr}}" batt="{{battStr}}" hint-size="1280px,720px"></dc-import></div>
 </sc-if>
 <sc-if value="{{endCancel}}" hint-placeholder-val="{{ false }}">
-<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalChoque" res="{{resStr}}" slip="{{slipStr}}" hora="{{horaStr}}" left="{{leftStr}}" hint-size="1280px,720px"></dc-import></div>
+<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalChoque" res="{{resStr}}" slip="{{slipStr}}" hora="{{horaStr}}" batt="{{battStr}}" hint-size="1280px,720px"></dc-import></div>
 </sc-if>
 <sc-if value="{{ended}}" hint-placeholder-val="{{ false }}">
-<div style="position: absolute; right: 32px; top: 28px; z-index: 1004"><button class="restart" onPointerDown="{{stopEv}}" onClick="{{restart}}"><span style="color: #10110c; background: #e6dfc0; padding: 1px 6px">R</span>OTRA VEZ</button></div>
+<div style="position: absolute; right: 32px; top: 28px; z-index: 1004"><button class="restart" aria-label="Jugar otra vez" onPointerDown="{{stopEv}}" onClick="{{restart}}"><span style="color: #10110c; background: #e6dfc0; padding: 1px 6px">R</span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 11 11" shape-rendering="crispEdges"><rect x="3" y="1" width="5" height="1" fill="#e6dfc0"></rect><rect x="2" y="2" width="1" height="1" fill="#e6dfc0"></rect><rect x="8" y="2" width="1" height="1" fill="#e6dfc0"></rect><rect x="1" y="3" width="1" height="5" fill="#e6dfc0"></rect><rect x="9" y="3" width="1" height="2" fill="#e6dfc0"></rect><rect x="2" y="8" width="1" height="1" fill="#e6dfc0"></rect><rect x="3" y="9" width="5" height="1" fill="#e6dfc0"></rect><rect x="8" y="8" width="1" height="1" fill="#e6dfc0"></rect><rect x="7" y="4" width="4" height="1" fill="#e6dfc0"></rect><rect x="9" y="5" width="1" height="1" fill="#e6dfc0"></rect></svg></button></div>
 </sc-if>
 
 </div>
@@ -384,6 +389,7 @@ class Component extends DCLogic {
     };
     // avisos del celular a lo largo del recorrido (segundos reales de juego)
     this.NOTIFS = [[7, 'subte'], [30, 'ask'], [56, 'group'], [84, 'clock'], [112, 'angry'], [145, 'call'], [180, 'angry'], [220, 'call'], [265, 'late']];
+    this.mq = (typeof window !== 'undefined' && window.matchMedia) ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
     this.reduced = (() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
     this.timers = [];
     this.onKeyDown = (e) => this.keyDown(e);
@@ -484,7 +490,7 @@ class Component extends DCLogic {
       if (artP) { artF.connect(artP); artP.connect(artG); } else artF.connect(artG);
       artG.connect(master);
       const sfxG = ctx.createGain(); sfxG.gain.value = 1; sfxG.connect(master);
-      const el = (src, dest) => { const a = new Audio(src); a.loop = true; a.preload = 'auto'; try { ctx.createMediaElementSource(a).connect(dest); } catch (e) { a.volume = 0.12; } return a; };
+      const el = (src, dest) => { const a = new Audio(src); a.loop = true; a.preload = 'auto'; try { ctx.createMediaElementSource(a).connect(dest); } catch (e) { a.volume = Math.min(1, this.masterVol() * 0.3); } return a; };
       const amb = el(this.SRC.ambiente, ambF);
       const fan = el(this.SRC.ventiladores, fanG);
       const art = el(this.SRC.artista, artF);
@@ -585,14 +591,14 @@ class Component extends DCLogic {
   holdStop() { const h = this.holdOsc; if (!h) return; this.holdOsc = null; try { this.set(h.gn.gain, 0.0001, 0.04); h.o.stop(this.A.ctx.currentTime + 0.3); } catch (e) {} }
   unlock() {
     const g = this.g;
-    this.initAudio();
+    if (this.props.sound !== false) this.initAudio();
     const A = this.A;
-    if (A) {
+    if (A && !g.paused) {
       try { if (A.ctx.state === 'suspended') A.ctx.resume(); } catch (e) {}
       [A.amb, A.fan, A.art].forEach((a) => { if (a.paused) a.play().catch(() => {}); });
     }
     if (g.phase === 'intro') {
-      g.phase = 'play';
+      g.phase = 'play'; g.introJust = true;
       this.sfx('timbre', { vol: 0.7 }); this.sfx('puerta', { delay: 2300, vol: 0.8 }); this.sfx('tren', { delay: 2900, vol: 0.7, pan: -0.4 });
     }
   }
@@ -633,11 +639,14 @@ class Component extends DCLogic {
   componentDidMount() {
     try { window.addEventListener('blur', this.onBlur); document.addEventListener('visibilitychange', this.onVis); window.addEventListener('pointerup', this.onWinUp); } catch (e) {}
     this.last = performance.now();
+    this.onMQ = () => { this.reduced = !!(this.mq && this.mq.matches); };
+    try { if (this.mq) this.mq.addEventListener('change', this.onMQ); } catch (e) {}
     this.raf = requestAnimationFrame(this.loop);
     setTimeout(() => this.focus(), 50);
   }
   componentWillUnmount() {
     cancelAnimationFrame(this.raf);
+    try { if (this.mq) this.mq.removeEventListener('change', this.onMQ); } catch (e) {}
     try { window.removeEventListener('blur', this.onBlur); document.removeEventListener('visibilitychange', this.onVis); window.removeEventListener('pointerup', this.onWinUp); } catch (e) {}
     (this.timers || []).forEach((t) => clearTimeout(t));
     this.holdStop();
@@ -707,7 +716,7 @@ class Component extends DCLogic {
   help(i) {
     const g = this.g;
     if (g.res[i]) return;
-    g.res[i] = 'help'; g.helps++; g.ff += 120; g.costT = 1.7; g.costTxt = "-2'00\"";
+    g.res[i] = 'help'; g.helps++; g.ff += 120; g.costT = 1.7; g.costTxt = "-2'00\""; g.live = 'Ayudaste. Dos minutos menos.';
     const t = this.target(i, true);
     g.stopT = 0.11; g.warmT = 0.9; g.glowT = 1.8; g.hopT = 0.45; g.hopI = i; g.flashAt = { x: t.x, y: t.y - 30 };
     this.burst(t.x, t.y - 40);
@@ -752,7 +761,7 @@ class Component extends DCLogic {
       case 3: return { x: L(2, 560), y: 380 };
       case 4: return { x: L(2, 1030), y: 392 };
       case 5: return { x: L(3, 720), y: 340 };
-      case 6: return { x: L(4, 676), y: 650 };
+      case 6: return { x: L(4, 712), y: 628 };
       case 7: return g.lift.stage === 1 ? { x: g.off.x - 50, y: g.off.y } : { x: g.lift.px - 60, y: g.lift.py + 20 };
       case 8: return { x: L(5, 650), y: 410 };
       case 9: return { x: g.kid.x - 50, y: g.kid.y };
@@ -769,7 +778,9 @@ class Component extends DCLogic {
   }
   pointer(e) {
     const g = this.g;
-    this.unlock(); this.focus();
+    if (g.phase === 'intro') { try { e.preventDefault(); } catch (err) {} this.unlock(); this.focus(); return; }
+    if (!g.paused) this.unlock();
+    this.focus();
     try { e.preventDefault(); this.stage.setPointerCapture(e.pointerId); } catch (err) {}
     if (g.phase !== 'play' || g.paused || !this.stage) return;
     const { sx, sy, x, y } = this.pointerXY(e);
@@ -854,6 +865,7 @@ class Component extends DCLogic {
   update(dt) {
     const g = this.g;
     g.t += dt;
+    if (g.phase === 'play' && !g.paused) g.pt = (g.pt || 0) + dt;
     g.parts = g.parts.filter((p) => (p.t += dt) < p.life);
     g.parts.forEach((p) => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 380 * dt; });
     ['warmT', 'grayT', 'glowT', 'hopT', 'squashT', 'bumpT', 'popT', 'costT', 'sadT', 'readerFlash', 'safeT', 'cutT', 'slipT'].forEach((k) => { if (g[k] > 0) g[k] -= dt; });
@@ -874,13 +886,13 @@ class Component extends DCLogic {
       else if (g.trainT > 2.3) g.shakeT = Math.max(g.shakeT, 0.05);
     }
     // el reloj es lo que falta para que salga el tren de la H: solo baja con lo que perdés
-    if (g.ff > 0) { const d = Math.min(g.ff, 160 * dt); g.left -= d; g.ff -= d; }
-    this.NOTIFS.forEach(([th, kind]) => { if (g.t >= th && !g.peeked[th]) { g.peeked[th] = true; g.notifQ.push({ kind, at: g.t }); } });
-    g.notifQ = g.notifQ.filter((n) => g.t - n.at < 20);  // los avisos viejos se descartan
+    if (g.ff > 0) { const d = Math.min(g.ff, 160 * dt); g.left -= d; g.ff -= d; if (g.ff <= 1e-6) { g.ff = 0; g.left = Math.round(g.left); } }
+    this.NOTIFS.forEach(([th, kind]) => { if (g.pt >= th && !g.peeked[th]) { g.peeked[th] = true; g.notifQ.push({ kind, at: g.pt }); } });
+    g.notifQ = g.notifQ.filter((n) => g.pt - n.at < 20);  // los avisos viejos se descartan
     g.peekT -= dt;
-    const busy = !!g.mini || (g.hold && g.prog > 0) || g.stun > 0 || (g.inRange && g.near > 0.35);
+    const busy = !!g.mini || (g.hold && g.prog > 0) || g.stun > 0 || g.inRange || g.near > 0.6;
     if (busy && g.peekT > 0) g.peekT = 0;
-    if (!busy && g.peekT <= -2.5 && g.notifQ.length) { g.unread = (g.unread || 0) + (g.peekKind === 'subte' ? 0 : 1 + Math.floor(Math.random() * 3)); g.newT = 1.2; g.peekKind = g.notifQ.shift().kind; g.peekT = 2.6; g.buzzT = 0; this.ding(); if (!this.reduced) g.shakeT = Math.max(g.shakeT, 0.25); }
+    if (!busy && g.peekT <= -2.5 && g.notifQ.length) { g.peekKind = g.notifQ.shift().kind; g.unread = (g.unread || 0) + (g.peekKind === 'subte' || g.peekKind === 'clock' || g.peekKind === 'late' ? 0 : 1); g.newT = 1.2; g.peekT = 2.6; g.buzzT = 0; this.ding(); if (!this.reduced) g.shakeT = Math.max(g.shakeT, 0.25); }
     if (g.peekT > 0) { g.buzzT -= dt; if (g.buzzT <= 0) { g.buzzT = 0.75; this.vibrate(); } }
     if (g.shakeT > 0) g.shakeT -= dt;
     // movimiento
@@ -907,6 +919,11 @@ class Component extends DCLogic {
           if (ly === 654 && ahead.length && Math.min(...ahead.map((q) => q.x)) - g.x < 44) wait = true;
         }
       }
+      // volver para atrás por los molinetes: también por un carril
+      if (g.walkTo.x < L5 + 700 && g.x > L5 + 690 && g.x < L5 + 840) {
+        const ly = Math.abs(g.y - 410) < Math.abs(g.y - 654) && g.res[8] === 'help' ? 410 : 654;
+        aim = Math.abs(g.y - ly) > 6 && g.x > L5 + 770 ? { x: Math.max(g.x, L5 + 800), y: ly } : { x: L5 + 660, y: ly };
+      }
       const wx = aim.x - g.x, wy = aim.y - g.y, wd = Math.hypot(wx, wy);
       if (aim === g.walkTo && wd < 6) g.walkTo = null; else if (!wait && wd > 0.5) { dx = wx / wd; dy = wy / wd; }
     }
@@ -918,7 +935,7 @@ class Component extends DCLogic {
       const sp = (this.props.speed ?? 230) * dt;
       const nx = Math.min(this.W - 20, Math.max(20, g.x + (dx / len) * sp));
       const ny = Math.min(688, Math.max(318, g.y + (dy / len) * sp));
-      if (this.free(nx, ny, g.x, g.y)) { g.x = nx; g.y = ny; }
+      if (this.free(nx, ny, g.x, g.y)) { g.x = nx; g.y = ny; g.dodge = 0; }
       else if (this.free(nx, g.y, g.x, g.y)) g.x = nx;
       else if (Math.abs(ny - g.y) > 0.3 && this.free(g.x, ny, g.x, g.y)) g.y = ny;
       else if (g.walkTo) { // rodear a quien está en el camino: probar arriba y abajo
@@ -936,7 +953,13 @@ class Component extends DCLogic {
       if (Math.abs(dx) > 0.2) g.face = Math.sign(dx);
       g.moving = g.x !== px0 || g.y !== py0;
       if (g.moving) { g.moved = true; g.dist += Math.hypot(g.x - px0, g.y - py0); }
-      if (g.walkTo) { if (Math.hypot(g.x - px0, g.y - py0) < 0.3) { g.stuckT += dt; if (g.stuckT > 1.2) { g.walkTo = null; g.stuckT = 0; } } else g.stuckT = 0; }
+      if (g.walkTo) { if (Math.hypot(g.x - px0, g.y - py0) < 0.3 && !(g.x > this.L(5, 600) && g.x < this.L(5, 860))) { g.stuckT += dt; if (g.stuckT > 1.2) { g.walkTo = null; g.stuckT = 0; } } else g.stuckT = 0; }
+      // si en un rato no se acerca al destino (por ejemplo, contra un banco), deja de intentar
+      if (g.walkTo) {
+        const wd2 = Math.hypot(g.walkTo.x - g.x, g.walkTo.y - g.y);
+        const atGate = g.x > this.L(5, 600) && g.x < this.L(5, 860);
+        if (atGate || g.wpBest == null || wd2 < g.wpBest - 4) { g.wpBest = wd2; g.wpT = 0; } else { g.wpT = (g.wpT || 0) + dt; if (g.wpT > 1.4) { g.walkTo = null; g.wpBest = null; g.wpT = 0; } }
+      } else { g.wpBest = null; g.wpT = 0; }
       if (!g.walkTo) g.dodge = 0;
       // empujar a quien pregunta: a los pocos segundos se corre y seguís de largo
       if (g.act === 2 && g.ask.contact && !g.res[2] && dx > 0 && g.x === px0) { g.pushT += dt; if (g.pushT > 1.4) { this.ignore(2); g.pushT = 0; } }
@@ -962,6 +985,7 @@ class Component extends DCLogic {
     if (g.x >= this.L(6, 790)) {
       for (let i = 0; i < 10; i++) if (!g.res[i]) this.ignore(i, true);
       g.phase = 'arrive'; g.arriveT = 0; g.mini = null; g.keys = {}; g.hold = false; g.mouseHold = false; g.peekT = 0; this.holdStop();
+      g.left = Math.round(g.left - g.ff); g.ff = 0; g.costT = 0;
       g.late = g.left <= 0;
       if (g.late && g.train.state !== 'stop') { g.train.state = 'stop'; g.train.x = 0; }
       if (!g.late) { this.sfx('timbre', { vol: 0.5, rate: 0.8 }); }
@@ -999,7 +1023,7 @@ class Component extends DCLogic {
   indicators(dt) {
     const g = this.g;
     if (g.newT > 0) g.newT -= dt;
-    g.batt = Math.max(3, 23 - Math.floor(g.t / 11));
+    g.batt = Math.max(3, 23 - Math.floor((g.pt || 0) / 11));
     if (g.batt !== g.battWas) { if (g.battWas && g.batt <= 10) this.tone('square', 900, 900, 0.06, 0.04, 3000); g.battWas = g.batt; }
     const lost = g.left <= 0;
     if (lost && !g.lostShown) { g.lostShown = true; g.lostT = 2.5; this.vibrate(); if (!this.reduced) g.shakeT = 0.3; }
@@ -1018,7 +1042,7 @@ class Component extends DCLogic {
     if (g.stun <= 0 && g.safeT <= 0 && g.moving && !g.mini) {
       const wet = g.puddles.some((p) => p.t < 15 && ((g.x - p.x) / 30) ** 2 + ((g.y - p.y) / 13) ** 2 < 1);
       if (wet) {
-        g.stun = 1.5; g.slipT = 1.5; g.safeT = 3.2; g.slips++; g.ff += 30; g.costT = 1.7; g.costTxt = "-0'30\"";
+        g.stun = 1.5; g.slipT = 1.5; g.safeT = 3.2; g.slips++; g.ff += 30; g.costT = 1.7; g.costTxt = "-0'30\""; g.live = 'Te resbalaste. Treinta segundos menos.';
         g.shakeT = this.reduced ? 0 : 0.35; g.walkTo = null; g.hold = false; this.holdStop(); this.slipSnd();
         g.crowd.forEach((q) => { if (this.dist(q.x, q.y, g.x, g.y) < 260) { q.react = 1.6; q.rtag = 'ex'; } });
       }
@@ -1185,7 +1209,7 @@ class Component extends DCLogic {
         if (g.act === 0) g.inRange = d < 120;
         if (holdAt(0, d < 44)) { D.picked = true; D.ownerOn = true; this.sfx('papel', { vol: 1 }); g.noticed = -1; g.squashT = 0.15; }
       } else if (g.act === 0) g.inRange = this.dist(g.x, g.y, L(0, 1120), 640) < 120;
-      if (g.x > L(0, 1260)) this.ignore(0);
+      if (g.x > L(0, 1260) && !D.picked) this.ignore(0);
     }
     // 1 · persona durmiendo en un rincón: dejarle un café y taparla
     if (!g.res[1]) {
@@ -1292,7 +1316,7 @@ class Component extends DCLogic {
   updateMini(dt, dx, dy) {
     const g = this.g, m = g.mini;
     if (m.type === 'rh') {
-      if (dx || dy) { g.mini = null; return; }
+      if (dx || dy) { g.art.fails = m.fails || 0; g.prog = 0; g.mini = null; return; }
       m.t += dt;
       // si el ritmo cuesta, alcanza con mantener apretado
       if ((m.fails || 0) >= 2 && g.hold) { m.holdT = (m.holdT || 0) + dt; g.prog = m.holdT / 1.6; if (m.holdT >= 1.6) { g.art.coin = true; this.help(3); return; } }
@@ -1334,13 +1358,13 @@ class Component extends DCLogic {
           if (!m.judged[k] && Math.abs(m.t - T) < 0.2) { m.judged[k] = 'hit'; hitAny = true; this.sfx('papel', { rate: 1 + k * 0.12 }); this.note([523.25, 659.25, 783.99, 1046.5][k], 0, 0.14, 0.045, 'square', 2600); break; }
         }
         if (!hitAny) { this.oops(); g.squashT = 0.12; }
-      } else if (g.inRange && !m) g.mini = { type: 'rh', t: 0, judged: [false, false, false, false], ticked: [false, false, false, false] };
+      } else if (g.inRange && !m) g.mini = { type: 'rh', t: 0, judged: [false, false, false, false], ticked: [false, false, false, false], fails: g.art.fails || 0 };
     }
     if (i === 6) {
       if (m && m.type === 'coin') {
         if (this.dist(m.cx, m.cy, L(4, 746), 611) < 26) { this.sfx('papel', { rate: 1.4 }); this.help(6); }
-        else { this.oops(); m.cx = g.x; m.cy = g.y - 70; }
-      } else if (g.inRange && !m) { g.mini = { type: 'coin', cx: g.x, cy: g.y - 70 }; this.sfx('papel', { rate: 1.6, vol: 0.7 }); }
+        else { this.oops(); m.cx = g.x + 24; m.cy = g.y - 34; }
+      } else if (g.inRange && !m) { g.mini = { type: 'coin', cx: g.x + 24, cy: g.y - 34 }; this.sfx('papel', { rate: 1.6, vol: 0.7 }); }
     }
     if (i === 7) {
       if (g.lift.stage === 0 && g.inRange) { g.lift.stage = 1; this.chime(); g.noticed = -1; }
@@ -1387,10 +1411,10 @@ class Component extends DCLogic {
     const Z = this.Z(), vw = this.viewW();
     const i = g.act, tgt = i >= 0 ? this.target(i) : null;
     const left = g.left;
-    const abs = Math.abs(Math.round(left));
-    // cuenta regresiva hasta que sale el tren de la H, en minutos y segundos (no es una hora)
-    const clock = (left < 0 ? '-' : '') + Math.floor(abs / 60) + "'" + String(abs % 60).padStart(2, '0') + '"';
-    const pm = 8 * 60 + 50 + Math.floor((600 - left) / 60);
+    const abs = Math.max(0, Math.round(left));
+    // cuenta regresiva hasta que sale el tren de la H, en minutos y segundos (no es una hora); no baja de 0
+    const clock = Math.floor(abs / 60) + "'" + String(abs % 60).padStart(2, '0') + '"';
+    const pm = 8 * 60 + 50 + Math.floor(Math.round(600 - left) / 60);
     const phoneTime = String(Math.floor(pm / 60)).padStart(2, '0') + ':' + String(pm % 60).padStart(2, '0');
     const crowdTint = 'saturate(' + Math.max(0.1, 0.34 - g.ignores * 0.03).toFixed(2) + ') brightness(' + (0.88 - g.focus * 0.14).toFixed(2) + ')';
     const inView = (x) => Math.abs(x - g.camX) < vw / 2 + 90;
@@ -1484,10 +1508,15 @@ class Component extends DCLogic {
     if (K.stage === 0 && !g.res[9] && !(g.act === 9 && g.inRange)) tag(K.x + 26, K.y + 12, Math.floor(g.t * 1.2) % 2 ? 'q' : 'tear');
     if (K.parent && inView(K.parent.x)) { actors.push(sprite(K.parent.x, K.parent.y, 8, K.parent.moving ? walkF(0) : 0, { flip: -1, label: 'Quien acompañaba al niño' })); if (!K.parent.moving) tag(K.parent.x, K.parent.y, 'heart'); }
     // en el andén de la H: la gente que ayudaste también llegó (se ve lo que pasó)
-    const THANKS = [[0, 13, 620, 600], [2, 14, 700, 470], [3, 15, 820, 600], [4, 4, 660, 520], [6, 16, 960, 610], [7, 22, 900, 480], [8, 18, 1000, 470], [1, 2, 760, 560]];
-    THANKS.forEach(([k, row, x, y]) => {
+    // se ubican en ronda alrededor de donde terminás, sin taparte
+    const ey = g.phase === 'play' ? 470 : g.y;
+    const THANKS = [[0, 13, -170, 50], [2, 14, -110, -95], [3, 15, -60, 125], [4, 4, -235, -35], [6, 16, 120, 115], [7, 22, 160, -70], [8, 18, 250, 25], [1, 2, -290, 95]];
+    THANKS.forEach(([k, row, ox, oy]) => {
       if (g.res[k] !== 'help') return;
-      const wx0 = L(6, x);
+      const wx0 = L(6, 880) + ox;
+      let y = ey + oy;
+      if (y < 340 || y > 684) y = ey - oy;
+      y = Math.min(684, Math.max(340, y));
       if (!inView(wx0)) return;
       const wave = g.phase !== 'play' && Math.floor(g.t * 3 + k) % 2;
       actors.push(sprite(wx0, y, row, wave ? 3 : 0, { flip: -1, label: 'Una persona que ayudaste en el camino', filter: 'saturate(1.1)' }));
@@ -1531,6 +1560,7 @@ class Component extends DCLogic {
       TP.forEach((pt, k) => trStops.push({ l: P(pt[0]), t: P(pt[1]), c: k < 3 ? '#3bb3e6' : k === 3 ? '#e6dfc0' : '#f2c200' }));
       for (let k = 0; k < m.step; k++) trTrail.push(segDiv(TP[k], TP[k + 1]));
       if (m.drag && m.cur && m.step < TP.length - 1) trTrail.push(segDiv(TP[m.step], m.cur));
+      if (m.shake > 0 && m.step < TP.length - 1) trTrail.push(segDiv(TP[m.step], TP[m.step + 1], '#e05a4a'));
       trNext = m.drag ? TP[Math.min(TP.length - 1, m.step + 1)] : TP[m.step];
     }
     const ended = g.phase === 'end';
@@ -1590,7 +1620,7 @@ class Component extends DCLogic {
       prl: P(g.x - 23), prt: P(g.y - 8),
       showMe: g.sceneT < 3.2 && g.phase === 'play', meL: P(g.x - 10), meT: P(g.y - 100),
       wtOn: !!g.walkTo, wtL: P(g.walkTo ? g.walkTo.x - 10 : 0), wtT: P(g.walkTo ? g.walkTo.y - 4 : 0),
-      pl: P(g.x - 24), pt: P(g.y - 76), pz: Math.round(g.y), psl: P(g.x - 17), pst: P(g.y - 4),
+      pl: P(g.x - 24), pt: P(g.y - 76), pz: Math.round(g.y) + 3, psl: P(g.x - 17), pst: P(g.y - 4),
       pbp: '-' + pframe * 48 + 'px -' + 12 * 80 + 'px', ptr,
       parts: g.parts.map((p) => ({ l: P(p.x), t: P(p.y), s: P(p.s), c: p.c, o: Math.max(0, 1 - p.t / p.life).toFixed(2) })),
       rhythmOn, rtL: P(g.x - 22), rtT: P(g.y - 60), rrS: P(rr), rrL: P(g.x - rr / 2), rrT: P(g.y - 38 - rr / 2), rdL: P(g.x - 20), rdT: P(g.y + 12), rhythmDots,
@@ -1606,23 +1636,23 @@ class Component extends DCLogic {
       vigAt: Math.round(fS[0]) + 'px ' + Math.round(fS[1]) + 'px', vigIn: Math.round(62 - g.focus * 34) + '%',
       flashAt: Math.round(flS[0]) + 'px ' + Math.round(flS[1]) + 'px',
       warmOp: Math.max(0, g.warmT / 0.9).toFixed(2), grayOp: Math.max(0, g.grayT / 0.8).toFixed(2),
-      ffOn: g.ff > 0 && !ended, costTxt: g.costTxt, hudOn: !(m && m.type === 'trace'), pauseOn: g.paused,
+      ffOn: g.ff > 0 && !ended, costTxt: g.costTxt, hudOn: !(m && (m.type === 'trace' || m.type === 'coin')), pauseOn: g.paused, pauseLabel: g.paused ? 'Reanudar' : 'Pausa', pausePressed: g.paused ? 'true' : 'false',
       escOn: !!(m && (m.type === 'trace' || m.type === 'coin')),
       timerColor: left > 240 ? '#e6dfc0' : left > 0 ? '#e8b33a' : '#e05a4a',
       clock, phoneTime,
       clockCls: !ended && (g.ff > 0 || (left < 120 && left > -30)) ? 'beat' : (g.lostT > 0 ? 'shk' : ''),
       msgOn: (g.unread || 0) > 0, msgN: (g.unread || 0) > 99 ? '99+' : String(g.unread || 0), msgCls: g.newT > 0 || g.peekT > 0 ? 'shk' : '', msgScreen: g.peekT > 0 ? '#e8b33a' : '#0d100c', msgLabel: (g.unread || 0) + ' mensajes sin leer',
       battW: Math.round(Math.max(1, (g.batt || 23) / 23 * 20)) + 'px', battC: (g.batt || 23) <= 10 ? '#e05a4a' : (g.batt || 23) <= 15 ? '#e8b33a' : '#bdb795', battTxt: (g.batt || 23) + '%', battCls: (g.batt || 23) <= 10 ? 'blink' : '', battLabel: 'Batería ' + (g.batt || 23) + ' por ciento',
-      presW: Math.round(Math.max(0, Math.min(1, left / 600)) * 76) + 'px', presC: left <= 0 ? '#55574a' : left < 120 ? '#e05a4a' : '#7fd18a', presLost: left <= 0, presCls: left <= 0 ? '' : left < 120 ? 'blink' : '', presLabel: left <= 0 ? 'Perdiste el presentismo' : 'Presentismo en juego',
+      presW: left > 0 ? '76px' : '0px', presC: left <= 0 ? '#55574a' : left < 120 ? '#e8b33a' : '#7fd18a', presLost: left <= 0, presCls: left <= 0 ? '' : left < 120 ? 'blink' : '', presLabel: left <= 0 ? 'Perdiste el presentismo' : 'Presentismo en juego',
       routePct: Math.round(prog * 230) + 'px', routePos: Math.round(prog * 230) + 'px', meters: meters + ' m', routeLabel: 'Faltan ' + meters + ' metros para el andén de la línea H',
       edgeOn, edgeL, edgeT, edgeFlip, edgeDir,
       peekOn: g.peekT > 0 && !ended, peekClock: g.peekKind === 'clock', peekAngry: g.peekKind === 'angry', ntHeart: g.peekKind === 'mom', ntCall: g.peekKind === 'call', ntBatt: g.peekKind === 'batt',
       ntWho: NT[0], ntAv: NT[1], ntAvBg: NT[2], ntAvFg: NT[3], ntIsText: !!NT[4], ntText: NT[4], ntColor: NT[5] || '#e6dfc0',
       dismissPeek: (e) => { e.stopPropagation(); this.g.peekT = Math.min(this.g.peekT, 0); this.focus(); },
       introOn: g.phase === 'intro',
-      liveMsg: ended ? (g.late ? 'Llegaste al andén justo cuando el tren se iba. Próximo en 5 minutos.' : 'Llegaste a tiempo, pero el servicio está demorado.') : '',
+      liveMsg: ended ? (g.late ? 'Llegaste al andén justo cuando el tren se iba. Próximo en 5 minutos.' : 'Llegaste a tiempo, pero el servicio tiene demoras.') : (g.live || ''),
       endLate: ended && g.late, endCancel: ended && !g.late, ended,
-      resStr: g.res.map((r) => (r === 'help' ? 'h' : 'i')).join(''), slipStr: String(g.slips), horaStr: phoneTime, leftStr: clock,
+      resStr: g.res.map((r) => (r === 'help' ? 'h' : 'i')).join(''), slipStr: String(g.slips), horaStr: phoneTime, battStr: String(g.batt),
       stageRef: this.stageRef,
       pointerDown: (e) => this.pointer(e),
       pointerMove: (e) => this.pointerMove(e),
@@ -1637,32 +1667,35 @@ class Component extends DCLogic {
   togglePause() {
     const g = this.g;
     if (g.phase !== 'play') return;
-    g.paused = !g.paused; this.clearInput();
+    g.paused = !g.paused; this.clearInput(); this.focus();
     try { if (this.A) { if (g.paused) this.A.ctx.suspend(); else this.A.ctx.resume(); } } catch (e) {}
     if (!g.paused) this.last = performance.now();
   }
   keyDown(e) {
-        this.unlock();
-        const g = this.g;
-        if (e.key === 'Escape') { e.preventDefault(); if (g.peekT > 0) g.peekT = 0; else if (!this.closeMini()) this.togglePause(); return; }
-        if (e.key === 'p' || e.key === 'P') { this.togglePause(); return; }
-        if (g.paused) return;
-        {
-        this.unlock();
-        const ARROWS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-        if (ARROWS.includes(e.key)) {
-          e.preventDefault();
-          if (!e.repeat) {
-            if (this.arrowInMini(e.key)) return;
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') this.alternate(e.key);
-          }
-          this.g.keys = { ...this.g.keys, [e.key]: true };
-        } else if (e.key === ' ' || e.code === 'Space') {
-          e.preventDefault();
-          if (!e.repeat) this.press();
-          this.g.hold = true;
-        } else if ((e.key === 'r' || e.key === 'R') && this.g.phase === 'end') { this.reset(); }
-        }
+    const g = this.g;
+    if (g.phase === 'intro') {
+      // en el celular solo arranca con espacio, Enter o una flecha
+      if ([' ', 'Enter', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) || e.code === 'Space') { e.preventDefault(); this.unlock(); }
+      return;
+    }
+    if ((e.key === 'r' || e.key === 'R') && (g.phase === 'end' || g.paused)) { this.holdStop(); this.reset(); return; }
+    if (e.key === 'Escape') { e.preventDefault(); if (g.paused) this.togglePause(); else if (g.peekT > 0) g.peekT = 0; else if (!this.closeMini()) this.togglePause(); return; }
+    if (e.key === 'p' || e.key === 'P') { this.togglePause(); return; }
+    if (g.paused) return;
+    this.unlock();
+    const ARROWS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+    if (ARROWS.includes(e.key)) {
+      e.preventDefault();
+      if (!e.repeat) {
+        if (this.arrowInMini(e.key)) return;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') this.alternate(e.key);
+      }
+      g.keys = { ...g.keys, [e.key]: true };
+    } else if (e.key === ' ' || e.code === 'Space') {
+      e.preventDefault();
+      if (!e.repeat) this.press();
+      g.hold = true;
+    }
   }
   keyUp(e) {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); const k = { ...this.g.keys }; delete k[e.key]; this.g.keys = k; }

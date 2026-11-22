@@ -15,10 +15,7 @@ NAMES = {  # nombres legibles para los archivos del sitio
     "f36bcc1c2c8af18655a2e48229792858": "tramo6", "78b142dbd9b49a5971d0f356c2886257": "sprites", "e04af81b0083e5ead348d37017db4fcf": "dormido1",
     "2de85611d7f1d41ed6abc95bb909b004": "dormido2", "a8211948342642ad44ce1a78bb266623": "cesto", "123522bc6884eaea6204d1b2caad9a77": "mojado",
     "2ceb79975e3ccf18c676c424d3516648": "sos", "17098684bf6fc482a2f7b305b81fe606": "fuera-de-servicio", "9b220fbbe27e0cd764a5ea5518ac2ae1": "tren-a",
-    "d7ffd391379468f32a384db35bc5f9b8": "luz0", "d6b7ed64085b806927d755eb81b1db4f": "luz1", "e391198e12dd782134eddaadec93e516": "luz2",
-    "3307372e90a7f1df348639d0bfc62cf2": "luz4", "74ced3df2f576147ecec7763fa714233": "luz5", "ff9447b93eab7e5cf875f7c89813123b": "luz6",
-    "401d37931137f641d0bbea3512450d84": "frente1", "71b6b0f0a3b67cf522bdb951cc7e04a4": "frente2", "a35e1f981c8365310b19cf762be6432c": "frente4",
-    "077205bd2f64714cceb0d463963ece4a": "inicio", "e81841d7d4e0e45d62559d01ce813a0b": "final",
+    "d7ffd391379468f32a384db35bc5f9b8": "luz0", "d6b7ed64085b806927d755eb81b1db4f": "luz1",
     "6b951be773a38246e9b3ab722b9bc4f2": "ambiente", "b83d510f4cd6221807d9ce156a80d66c": "artista", "125e44b4f34220a6aa6aeb1a2a09e7df": "papel",
     "7be023788ae3c0d0c03a4f8ee205f3b6": "puerta", "77e479a7bc96b90959deb5886095c71f": "timbre", "0db6f002e9dfd08f9e07bbd4e20c373b": "tren",
     "603b2a40e6211807ad2937a5aa3d679a": "ventiladores",
@@ -38,6 +35,7 @@ def main():
             used[bid] = (os.path.join(BLOBS, src[0]), dst)
             return dst
         t = re.sub(r"/_blob/([0-9a-f]{32})", sub, t)
+        t = t.replace('<script src="./support.js"></script>\n', "")
         t = re.sub(r'<link rel="preconnect" href="https://fonts.googleapis.com">\n?', "", t)
         t = re.sub(r'<link href="https://fonts.googleapis.com/[^"]*" rel="stylesheet">\n?', "", t)
         open(os.path.join(SITE, "dc", name + ".dc.html"), "w", encoding="utf-8").write(t)
@@ -46,14 +44,15 @@ def main():
     for src, dst in used.values():
         out = os.path.join(SITE, dst); os.makedirs(os.path.dirname(out), exist_ok=True)
         if dst.endswith(".mp3"):
-            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-codec:a", "libmp3lame", "-b:a", "128k", out], check=True)
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-ac", "1", "-codec:a", "libmp3lame", "-b:a", "96k", out], check=True)  # mono: pesa la mitad
         else:
             shutil.copyfile(src, out)
     # ícono y portada para compartir (se rehacen porque assets/img se borró arriba)
     from PIL import Image, ImageDraw
     img = os.path.join(SITE, "assets", "img")
     tramo = [v[0] for k, v in used.items() if NAMES.get(k) == "tramo0"][0]
-    cover = Image.open(tramo).convert("RGB").resize((1200, 630), Image.NEAREST)
+    src_img = Image.open(tramo).convert("RGB")
+    cover = src_img.crop((40, 45, 1240, 675))  # recorte central, sin deformar los píxeles
     cover.save(os.path.join(img, "portada.png"))
     ico = Image.new("RGBA", (64, 64), (0, 0, 0, 0)); d = ImageDraw.Draw(ico)
     d.ellipse((2, 2, 61, 61), fill=(7, 7, 5)); d.ellipse((6, 6, 57, 57), fill=(242, 194, 0))
