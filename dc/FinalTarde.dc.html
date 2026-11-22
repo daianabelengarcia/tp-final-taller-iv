@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Final 1</title>
+<title>Final: llegás tarde</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -19,12 +19,12 @@ body{margin:0}
 <div style="position: absolute; left: 28px; top: 96px; width: 440px; box-sizing: border-box; padding: 20px 18px 18px; background: rgba(14,15,10,.94); box-shadow: inset 0 0 0 2px #3b3d2c, inset 0 3px 0 0 #55574a, 0 8px 24px rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 14px">
 <span style="font-family: 'Silkscreen', monospace; font-size: 12px; letter-spacing: 3px; color: #8f8c72">LO QUE MOSTRASTE</span>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px">
-<sc-for list="{{lines}}" as="ln" hint-placeholder-count="10">
+<sc-for list="{{lines}}" as="ln" hint-placeholder-count="5">
 <div style="display: flex; align-items: center; gap: 12px; opacity: {{ln.op}}">
 <div style="position: relative; width: 38px; height: 38px; flex-shrink: 0; background: {{ln.bg}}; box-shadow: 0 0 0 3px #070705; display: flex; align-items: center; justify-content: center">
 <div style="display: flex; filter: {{ln.f}}">
 <sc-if value="{{ln.k0}}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="3" width="10" height="7" fill="#d8d0b0"></rect><rect x="2" y="4" width="3" height="4" fill="#7d7a62"></rect><rect x="6" y="5" width="4" height="1" fill="#7d7a62"></rect></svg></sc-if>
-<sc-if value="{{ln.k1}}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="3" y="3" width="6" height="1" fill="#e6dfc0"></rect><rect x="1" y="4" width="2" height="1" fill="#e6dfc0"></rect><rect x="9" y="4" width="2" height="1" fill="#e6dfc0"></rect><rect x="0" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="11" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="1" y="7" width="2" height="1" fill="#e6dfc0"></rect><rect x="9" y="7" width="2" height="1" fill="#e6dfc0"></rect><rect x="3" y="8" width="6" height="1" fill="#e6dfc0"></rect><rect x="4" y="4" width="4" height="4" fill="#8ec8f0"></rect><rect x="5" y="5" width="2" height="2" fill="#10110c"></rect></svg></sc-if>
+<sc-if value="{{ln.k1}}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="0" width="1" height="2" fill="#bdb795"></rect><rect x="6" y="1" width="1" height="2" fill="#bdb795"></rect><rect x="2" y="3" width="7" height="1" fill="#f4f0dc"></rect><rect x="2" y="4" width="7" height="6" fill="#c9a26a"></rect><rect x="2" y="6" width="7" height="1" fill="#7a5a3a"></rect><rect x="9" y="5" width="2" height="1" fill="#c9a26a"></rect><rect x="10" y="6" width="1" height="2" fill="#c9a26a"></rect><rect x="9" y="8" width="2" height="1" fill="#c9a26a"></rect><rect x="1" y="10" width="9" height="1" fill="#8a3a4a"></rect></svg></sc-if>
 <sc-if value="{{ln.k2}}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="1" width="10" height="7" fill="#e6dfc0"></rect><rect x="2" y="8" width="2" height="2" fill="#e6dfc0"></rect><rect x="2" y="3" width="3" height="3" fill="#3bb3e6"></rect><rect x="5" y="4" width="2" height="1" fill="#10110c"></rect><rect x="7" y="3" width="3" height="3" fill="#f2c200"></rect></svg></sc-if>
 <sc-if value="{{ln.k3}}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="1" width="6" height="2" fill="#c9d97a"></rect><rect x="4" y="3" width="1" height="5" fill="#c9d97a"></rect><rect x="9" y="3" width="1" height="4" fill="#c9d97a"></rect><rect x="2" y="7" width="3" height="3" fill="#c9d97a"></rect><rect x="7" y="6" width="3" height="3" fill="#c9d97a"></rect></svg></sc-if>
 <sc-if value="{{ln.k4}}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="3" width="10" height="2" fill="#d8a860"></rect><rect x="1" y="5" width="10" height="1" fill="#7fd18a"></rect><rect x="1" y="6" width="10" height="1" fill="#e05a4a"></rect><rect x="1" y="7" width="10" height="1" fill="#f2c200"></rect><rect x="1" y="8" width="10" height="2" fill="#d8a860"></rect></svg></sc-if>
@@ -36,10 +36,11 @@ body{margin:0}
 </div>
 <sc-if value="{{ln.help}}" hint-placeholder-val="{{ true }}"><div style="position: absolute; right: -7px; bottom: -7px; width: 16px; height: 16px; background: #e8b33a; box-shadow: 0 0 0 2px #070705; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" shape-rendering="crispEdges"><rect x="1" y="5" width="2" height="2" fill="#10110c"></rect><rect x="3" y="7" width="2" height="2" fill="#10110c"></rect><rect x="5" y="5" width="2" height="2" fill="#10110c"></rect><rect x="7" y="3" width="2" height="2" fill="#10110c"></rect><rect x="8" y="1" width="2" height="2" fill="#10110c"></rect></svg></div></sc-if>
 </div>
-<span style="font-size: 21px; line-height: 1; color: {{ln.color}}; white-space: nowrap">{{ln.text}}</span>
+<span style="font-size: 23px; line-height: 1; color: #e6dfc0; white-space: nowrap">{{ln.text}}</span>
 </div>
 </sc-for>
 </div>
+<sc-if value="{{noneOn}}" hint-placeholder-val="{{ false }}"><div style="height: 38px; display: flex; align-items: center; gap: 10px"><div style="width: 38px; height: 38px; background: #16170f; box-shadow: 0 0 0 3px #070705"></div><span style="font-size: 30px; color: #6b6a55">...</span></div></sc-if>
 <sc-if value="{{slipOn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 22px; color: #8ec8f0">{{slipTxt}}</span></sc-if>
 <div style="height: 2px; background: #2c2d21"></div>
 <div style="display: flex; justify-content: space-between; align-items: baseline">
@@ -52,7 +53,7 @@ body{margin:0}
 <div style="height: 100%; background: #0d100c; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center">
 
 <div style="align-self: stretch; display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; font-size: 19px; color: #bdb795">
-<span>09:02</span>
+<span>{{hora}}</span>
 <div style="display: flex; align-items: center; gap: 8px">
 <svg role="img" aria-label="Señal baja" width="18" height="12" viewBox="0 0 9 6" shape-rendering="crispEdges"><rect x="0" y="4" width="2" height="2" fill="#bdb795"></rect><rect x="3" y="2" width="2" height="4" fill="#bdb795"></rect><rect x="6" y="0" width="2" height="6" fill="#3b3d2c"></rect></svg>
 <span>19%</span>
@@ -89,19 +90,20 @@ body{margin:0}
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"res":{"editor":null,"tsType":"string"},"slip":{"editor":null,"tsType":"string"},"$preview":{"width":1280,"height":720}}'>
+<script type="text/x-dc" data-dc-script data-props='{"res":{"editor":null,"tsType":"string"},"slip":{"editor":null,"tsType":"string"},"hora":{"editor":null,"tsType":"string"},"left":{"editor":null,"tsType":"string"},"$preview":{"width":1280,"height":720}}'>
 class Component extends DCLogic {
   renderVals() {
     const s = String(this.props.res || 'hihihhhiih').padEnd(10, 'i').slice(0, 10).split('');
-    const W = ['Honestidad', 'Atención', 'Paciencia', 'Sensibilidad', 'Empatía', 'Coraje', 'Solidaridad', 'Compromiso', 'Generosidad', 'Cuidado'];
+    const W = ['Honestidad', 'Cuidado', 'Paciencia', 'Sensibilidad', 'Empatía', 'Responsabilidad', 'Solidaridad', 'Compromiso', 'Generosidad', 'Contención'];
     const n = s.filter((c) => c === 'h').length;
     const slips = parseInt(this.props.slip || '0', 10) || 0;
     const sec = slips * 30;
     return {
       res: s.map((c) => ({ bg: c === 'h' ? '#e8b33a' : '#4a4936' })),
-      lines: s.map((c, i) => Object.assign({ help: c === 'h', text: W[i], bg: c === 'h' ? '#2a2a1c' : '#16170f', color: c === 'h' ? '#e6dfc0' : '#6b6a55', op: c === 'h' ? '1' : '.8', f: c === 'h' ? 'none' : 'grayscale(1) brightness(.6)' }, Object.fromEntries(W.map((_, k) => ['k' + k, k === i])))),
-      count: n + ' / 10', total: n ? '-' + (n * 2) + ':00' : '0:00',
-      slipOn: slips > 0, slipTxt: 'Resbalones: ' + slips + ' · -' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
+      lines: s.map((c, i) => Object.assign({ help: c === 'h', text: W[i], bg: '#2a2a1c', f: 'none' }, Object.fromEntries(W.map((_, k) => ['k' + k, k === i])))).filter((l) => l.help),
+      noneOn: n === 0, hora: this.props.hora || '09:02',
+      count: n + ' / 10', total: n ? '-' + (n * 2) + "'00\"" : "0'00\"",
+      slipOn: slips > 0, slipTxt: '-' + Math.floor(sec / 60) + "'" + String(sec % 60).padStart(2, '0') + '"'
     };
   }
 }

@@ -12,7 +12,7 @@
 body{margin:0;background:#0a0a07}
 .stage:focus{outline:none}
 .bg{image-rendering:pixelated}
-.spr{position:absolute;width:48px;height:80px;background-image:url(assets/img/sprites.png);background-size:288px 1840px;background-repeat:no-repeat;image-rendering:pixelated;transform-origin:50% 100%}
+.spr{position:absolute;width:48px;height:80px;background-image:url(assets/img/sprites.png);background-size:288px 1920px;background-repeat:no-repeat;image-rendering:pixelated;transform-origin:50% 100%}
 .shadow{position:absolute;height:8px;border-radius:50%;background:rgba(10,10,6,.34)}
 .restart{all:unset;cursor:pointer;box-sizing:border-box;padding:10px 16px;min-height:44px;display:flex;align-items:center;gap:10px;background:#14150f;box-shadow:3px 0 0 0 #3b3d2c,-3px 0 0 0 #3b3d2c,0 3px 0 0 #3b3d2c,0 -3px 0 0 #3b3d2c;font-family:'Silkscreen',monospace;font-size:12px;color:#e6dfc0}
 .restart:hover,.restart:focus-visible{box-shadow:3px 0 0 0 #e8b33a,-3px 0 0 0 #e8b33a,0 3px 0 0 #e8b33a,0 -3px 0 0 #e8b33a}
@@ -32,8 +32,9 @@ body{margin:0;background:#0a0a07}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 .alarm{animation:alarm .5s infinite steps(1)}
 @keyframes alarm{0%{box-shadow:0 0 0 6px #e05a4a,0 0 0 10px #070705,0 0 60px rgba(224,90,74,.9)}50%{box-shadow:0 0 0 6px #f4f0dc,0 0 0 10px #070705,0 0 20px rgba(224,90,74,.4)}}
-.redpulse{animation:redpulse .5s infinite steps(2)}
-@keyframes redpulse{0%{opacity:.75}100%{opacity:.25}}
+.redpulse{animation:redpulse 1.4s infinite ease-in-out}
+@keyframes redpulse{0%,100%{opacity:.55}50%{opacity:.2}}
+.key{display:inline-flex;align-items:center;justify-content:center;height:18px;min-width:18px;padding:0 4px;box-sizing:border-box;background:#e6dfc0;color:#10110c;box-shadow:0 0 0 2px #070705;font-family:'Silkscreen',monospace;font-weight:700;font-size:9px;line-height:1}
 .fadein{animation:fadein .6s ease-out}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .scan{background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 3px);pointer-events:none}
@@ -56,9 +57,10 @@ body{margin:0;background:#0a0a07}
 .puddle{position:absolute;border-radius:50%;background:radial-gradient(ellipse at 40% 40%,rgba(220,240,255,.55),rgba(140,180,210,.32) 45%,rgba(90,130,160,.18) 70%,rgba(90,130,160,0) 72%);pointer-events:none}
 .tape{background:repeating-linear-gradient(135deg,#f2c200 0 14px,#10110c 14px 28px)}
 .seg{position:absolute;height:8px;transform-origin:0 50%;border-radius:4px}
+@media (prefers-reduced-motion: reduce){.buzz,.blink,.redpulse,.alarm,.shk,.beat,.grr,.float,.note,.pulse,.glow,.chl,.chr,.pop,.fadein{animation:none !important}}
 </style>
 </helmet>
-<div class="stage" tabIndex="0" ref="{{stageRef}}" onKeyDown="{{keyDown}}" onKeyUp="{{keyUp}}" onPointerDown="{{pointerDown}}" onPointerMove="{{pointerMove}}" onPointerUp="{{pointerUp}}" onPointerCancel="{{pointerUp}}" aria-label="Recorrido jugable: flechas o clic para caminar, espacio o clic sostenido para actuar" style="width: 1280px; height: 720px; position: relative; overflow: hidden; font-family: 'VT323', monospace; color: #e6dfc0; background: #0a0a07; cursor: {{cursor}}; touch-action: none; user-select: none; -webkit-user-select: none">
+<div class="stage" role="application" tabIndex="0" ref="{{stageRef}}" onKeyDown="{{keyDown}}" onKeyUp="{{keyUp}}" onPointerDown="{{pointerDown}}" onPointerMove="{{pointerMove}}" onPointerUp="{{pointerUp}}" onPointerCancel="{{pointerUp}}" aria-label="Recorrido jugable: flechas o clic para caminar, espacio o clic sostenido para actuar, Escape para cerrar o pausar" style="width: 1280px; height: 720px; position: relative; overflow: hidden; font-family: 'VT323', monospace; color: #e6dfc0; background: #0a0a07; cursor: {{cursor}}; touch-action: none; user-select: none; -webkit-user-select: none">
 
 <!-- El mundo: un solo recorrido de la A a la H. La cámara sigue al personaje -->
 <div style="position: absolute; left: 0; top: 0; width: 8960px; height: 720px; transform-origin: 0 0; transform: translate({{wx}}, {{wy}}) scale({{zoom}}); filter: {{worldFilter}}">
@@ -66,6 +68,8 @@ body{margin:0;background:#0a0a07}
 <img class="bg" src="{{b.src}}" alt="{{b.alt}}" style="position: absolute; left: {{b.l}}; top: 0; width: 1280px; height: 720px">
 </sc-for>
 <sc-if value="{{showTrain}}" hint-placeholder-val="{{ false }}"><img class="layer" src="assets/img/tren-a.png" alt="Tren de la línea A que se va" style="left: {{trainX}}"></sc-if>
+<sc-if value="{{showTrainH}}" hint-placeholder-val="{{ false }}"><img class="layer" src="assets/img/tren-h.png" alt="Tren de la línea H en el andén" style="left: {{trainHX}}"></sc-if>
+
 
 <!-- Ascensor fuera de servicio -->
 <div class="tape" style="position: absolute; left: 6194px; top: 236px; width: 236px; height: 14px; opacity: .9"></div>
@@ -103,13 +107,17 @@ body{margin:0;background:#0a0a07}
 <svg role="img" aria-label="Documento en el piso" style="position: absolute; left: {{dniL}}; top: {{dniT}}; transform: rotate({{dniRot}}); z-index: 2" width="28" height="20" viewBox="0 0 14 10" shape-rendering="crispEdges"><rect x="0" y="0" width="14" height="10" fill="#14130f"></rect><rect x="1" y="1" width="12" height="8" fill="#d8d0b0"></rect><rect x="2" y="2" width="3" height="5" fill="#7d7a62"></rect><rect x="7" y="3" width="5" height="1" fill="#7d7a62"></rect><rect x="7" y="6" width="4" height="1" fill="#7d7a62"></rect></svg>
 </sc-if>
 <!-- Estuche del artista -->
-<svg aria-hidden="true" style="position: absolute; left: 3178px; top: 318px; z-index: 318" width="40" height="20" viewBox="0 0 10 5" shape-rendering="crispEdges"><rect x="0" y="1" width="10" height="4" fill="#14130f"></rect><rect x="1" y="2" width="8" height="2" fill="#5a2420"></rect><sc-if value="{{coinInCase}}" hint-placeholder-val="{{ false }}"><rect x="4" y="2" width="2" height="1" fill="#e8b33a"></rect></sc-if></svg>
+<svg aria-hidden="true" style="position: absolute; left: 3178px; top: 318px; z-index: 318" width="40" height="20" viewBox="0 0 10 5" shape-rendering="crispEdges"><rect x="0" y="1" width="10" height="4" fill="#14130f"></rect><rect x="1" y="2" width="8" height="2" fill="#5a2420"></rect></svg>
+<sc-if value="{{coinInCase}}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="position: absolute; left: 3194px; top: 326px; width: 8px; height: 4px; background: #e8b33a; box-shadow: 0 0 6px rgba(232,179,58,.9); z-index: 319"></div></sc-if>
 <sc-if value="{{showNotes}}" hint-placeholder-val="{{ false }}">
 <sc-for list="{{notes}}" as="n" hint-placeholder-count="3">
 <div class="note" style="left: {{n.l}}; top: {{n.t}}; animation-delay: {{n.d}}; z-index: 900"><svg width="16" height="16" viewBox="0 0 6 6" aria-hidden="true" shape-rendering="crispEdges"><rect x="3" y="0" width="1" height="4" fill="{{noteColor}}"></rect><rect x="4" y="0" width="2" height="1" fill="{{noteColor}}"></rect><rect x="1" y="3" width="3" height="2" fill="{{noteColor}}"></rect></svg></div>
 </sc-for>
 </sc-if>
 <!-- Café que le dejaste a quien duerme -->
+<sc-if value="{{showBlanket}}" hint-placeholder-val="{{ false }}">
+<svg aria-hidden="true" style="position: absolute; left: 1398px; top: 314px; z-index: 347" width="80" height="28" viewBox="0 0 20 7" shape-rendering="crispEdges"><rect x="1" y="0" width="18" height="1" fill="#14130f"></rect><rect x="0" y="1" width="20" height="5" fill="#14130f"></rect><rect x="1" y="1" width="18" height="4" fill="#8a3a4a"></rect><rect x="1" y="2" width="18" height="1" fill="#a85060"></rect><rect x="4" y="1" width="1" height="4" fill="#6c2a38"></rect><rect x="10" y="1" width="1" height="4" fill="#6c2a38"></rect><rect x="15" y="1" width="1" height="4" fill="#6c2a38"></rect></svg>
+</sc-if>
 <sc-if value="{{showCup}}" hint-placeholder-val="{{ false }}">
 <svg aria-hidden="true" style="position: absolute; left: 1556px; top: 330px; z-index: 341" width="16" height="20" viewBox="0 0 4 5" shape-rendering="crispEdges"><rect x="0" y="0" width="4" height="1" fill="#f4f0dc"></rect><rect x="0" y="1" width="4" height="4" fill="#c9a26a"></rect><rect x="0" y="2" width="4" height="1" fill="#7a5a3a"></rect></svg>
 </sc-if>
@@ -183,9 +191,11 @@ body{margin:0;background:#0a0a07}
 <div style="display: flex; flex-direction: column; align-items: center; transform: scale({{bS}}); transform-origin: 50% 100%; opacity: {{bOp}}; transition: transform .2s ease-out, opacity .2s">
 <div style="position: relative; width: 52px; height: 52px; background: #14150f; box-shadow: 0 0 0 3px {{bRing}}, 0 0 0 6px #070705, 0 0 20px rgba(232,179,58,{{bGlow}}); display: flex; align-items: center; justify-content: center">
 <div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{holdPct}}; background: rgba(232,179,58,.55)"></div>
+<span style="position: absolute; left: 66px; top: 2px; white-space: nowrap; font-size: 24px; line-height: 1; color: #e05a4a; text-shadow: 2px 2px 0 #070705">{{costGhost}}</span>
+<sc-if value="{{teachOn}}" hint-placeholder-val="{{ false }}"><div class="blink" style="position: absolute; left: 66px; top: 30px; display: flex; align-items: flex-end; gap: 8px"><div style="width: 56px; height: 20px; background: #e6dfc0; box-shadow: 0 0 0 2px #070705; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; box-sizing: border-box"><div style="width: 34px; height: 3px; background: #10110c"></div></div><svg aria-hidden="true" width="18" height="24" viewBox="0 0 8 11" shape-rendering="crispEdges"><rect x="0" y="0" width="8" height="11" fill="#070705"></rect><rect x="1" y="1" width="6" height="9" fill="#e6dfc0"></rect><rect x="1" y="1" width="3" height="4" fill="#e8b33a"></rect><rect x="4" y="1" width="1" height="4" fill="#070705"></rect></svg></div></sc-if>
 <sc-if value="{{iGrab}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="3" y="1" width="7" height="4" fill="#e6dfc0"></rect><rect x="2" y="3" width="1" height="2" fill="#e6dfc0"></rect><rect x="3" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="5" y="5" width="1" height="3" fill="#e6dfc0"></rect><rect x="7" y="5" width="1" height="3" fill="#e6dfc0"></rect><rect x="9" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="3" y="9" width="7" height="2" fill="#d8d0b0"></rect></svg></sc-if>
 <sc-if value="{{iDni}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="3" width="10" height="7" fill="#d8d0b0"></rect><rect x="2" y="4" width="3" height="4" fill="#7d7a62"></rect><rect x="6" y="5" width="4" height="1" fill="#7d7a62"></rect><rect x="6" y="7" width="3" height="1" fill="#7d7a62"></rect></svg></sc-if>
-<sc-if value="{{iEye}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="3" y="3" width="6" height="1" fill="#e6dfc0"></rect><rect x="1" y="4" width="2" height="1" fill="#e6dfc0"></rect><rect x="9" y="4" width="2" height="1" fill="#e6dfc0"></rect><rect x="0" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="11" y="5" width="1" height="2" fill="#e6dfc0"></rect><rect x="1" y="7" width="2" height="1" fill="#e6dfc0"></rect><rect x="9" y="7" width="2" height="1" fill="#e6dfc0"></rect><rect x="3" y="8" width="6" height="1" fill="#e6dfc0"></rect><rect x="4" y="4" width="4" height="4" fill="#8ec8f0"></rect><rect x="5" y="5" width="2" height="2" fill="#10110c"></rect></svg></sc-if>
+<sc-if value="{{iEye}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="4" y="0" width="1" height="2" fill="#bdb795"></rect><rect x="6" y="1" width="1" height="2" fill="#bdb795"></rect><rect x="2" y="3" width="7" height="1" fill="#f4f0dc"></rect><rect x="2" y="4" width="7" height="6" fill="#c9a26a"></rect><rect x="2" y="6" width="7" height="1" fill="#7a5a3a"></rect><rect x="9" y="5" width="2" height="1" fill="#c9a26a"></rect><rect x="10" y="6" width="1" height="2" fill="#c9a26a"></rect><rect x="9" y="8" width="2" height="1" fill="#c9a26a"></rect><rect x="1" y="10" width="9" height="1" fill="#8a3a4a"></rect></svg></sc-if>
 <sc-if value="{{iExplain}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="1" width="10" height="7" fill="#e6dfc0"></rect><rect x="2" y="8" width="2" height="2" fill="#e6dfc0"></rect><rect x="2" y="3" width="3" height="3" fill="#3bb3e6"></rect><rect x="5" y="4" width="2" height="1" fill="#10110c"></rect><rect x="7" y="3" width="3" height="3" fill="#f2c200"></rect></svg></sc-if>
 <sc-if value="{{iNote}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="4" y="1" width="6" height="2" fill="#c9d97a"></rect><rect x="4" y="3" width="1" height="5" fill="#c9d97a"></rect><rect x="9" y="3" width="1" height="4" fill="#c9d97a"></rect><rect x="2" y="7" width="3" height="3" fill="#c9d97a"></rect><rect x="7" y="6" width="3" height="3" fill="#c9d97a"></rect></svg></sc-if>
 <sc-if value="{{iFood}}" hint-placeholder-val="{{ false }}"><svg width="36" height="36" style="position: relative" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="1" y="3" width="10" height="2" fill="#d8a860"></rect><rect x="1" y="5" width="10" height="1" fill="#7fd18a"></rect><rect x="1" y="6" width="10" height="1" fill="#e05a4a"></rect><rect x="1" y="7" width="10" height="1" fill="#f2c200"></rect><rect x="1" y="8" width="10" height="2" fill="#d8a860"></rect><rect x="2" y="2" width="8" height="1" fill="#d8a860"></rect></svg></sc-if>
@@ -216,10 +226,11 @@ body{margin:0;background:#0a0a07}
 <sc-if value="{{scanlines}}" hint-placeholder-val="{{ true }}"><div class="scan" style="position: absolute; inset: 0; z-index: 990"></div></sc-if>
 <sc-if value="{{ffOn}}" hint-placeholder-val="{{ false }}"><div class="vhs" style="position: absolute; inset: 0; background-color: rgba(30,40,60,.18); pointer-events: none; z-index: 991"></div></sc-if>
 
-<!-- HUD: reloj y cuánto falta para el andén de la H -->
+<!-- HUD: lo que falta para que salga el tren de la H y cuánto falta para el andén -->
+<sc-if value="{{hudOn}}" hint-placeholder-val="{{ true }}">
 <div class="hud" style="position: absolute; left: 24px; top: 20px; padding: 12px 18px 14px 16px; display: flex; flex-direction: column; gap: 12px; pointer-events: none; z-index: 1000">
 <div style="display: flex; align-items: center; gap: 14px">
-<svg role="img" aria-label="Trabajo" width="30" height="30" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="1" width="4" height="1" fill="#bdb795"></rect><rect x="4" y="1" width="1" height="2" fill="#bdb795"></rect><rect x="7" y="1" width="1" height="2" fill="#bdb795"></rect><rect x="1" y="3" width="10" height="7" fill="#7a5a3a"></rect><rect x="1" y="6" width="10" height="1" fill="#5e4329"></rect><rect x="5" y="5" width="2" height="3" fill="#e8b33a"></rect></svg>
+<svg role="img" aria-label="Lo que falta para que salga el tren de la H" width="34" height="34" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="2" y="1" width="8" height="8" fill="#bdb795"></rect><rect x="3" y="2" width="6" height="3" fill="#1d1e18"></rect><rect x="3" y="6" width="2" height="2" fill="#f2c200"></rect><rect x="7" y="6" width="2" height="2" fill="#f2c200"></rect><rect x="2" y="5" width="8" height="1" fill="#f2c200"></rect><rect x="3" y="9" width="1" height="2" fill="#bdb795"></rect><rect x="8" y="9" width="1" height="2" fill="#bdb795"></rect><rect x="1" y="11" width="10" height="1" fill="#55574a"></rect></svg>
 <span class="{{clockCls}}" style="font-size: 48px; line-height: .8; color: {{timerColor}}; display: inline-block">{{clock}}</span>
 <sc-if value="{{ffOn}}" hint-placeholder-val="{{ false }}"><span class="blink" style="font-size: 30px; line-height: .8; color: #e05a4a">{{costTxt}}</span></sc-if>
 </div>
@@ -244,11 +255,34 @@ body{margin:0;background:#0a0a07}
 <span style="font-size: 22px; line-height: 1; color: {{battC}}">{{battTxt}}</span>
 </div>
 <div class="{{presCls}}" role="img" aria-label="{{presLabel}}" style="display: flex; align-items: center; gap: 8px">
-<div style="position: relative; width: 22px; height: 22px; border-radius: 50%; background: {{presC}}; box-shadow: 0 0 0 2px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 12px; color: #10110c">$<sc-if value="{{presLost}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; left: -4px; right: -4px; top: 9px; height: 4px; background: #e05a4a; transform: rotate(-40deg); box-shadow: 0 0 0 1px #070705"></div></sc-if></div>
+<div style="position: relative; width: 22px; height: 24px; display: flex; align-items: flex-end; justify-content: center"><svg aria-hidden="true" style="position: absolute; left: 0; top: 0" width="22" height="24" viewBox="0 0 11 12" shape-rendering="crispEdges"><rect x="2" y="0" width="3" height="4" fill="#3b70bc"></rect><rect x="6" y="0" width="3" height="4" fill="#e05a4a"></rect><rect x="2" y="4" width="7" height="7" fill="#070705"></rect><rect x="3" y="5" width="5" height="5" fill="{{presC}}"></rect><rect x="5" y="6" width="1" height="3" fill="#070705"></rect></svg><sc-if value="{{presLost}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; left: -4px; right: -4px; top: 9px; height: 4px; background: #e05a4a; transform: rotate(-40deg); box-shadow: 0 0 0 1px #070705"></div></sc-if></div>
 <div style="width: 76px; height: 8px; background: #2c2d21; box-shadow: 0 0 0 2px #070705"><div style="width: {{presW}}; height: 8px; background: {{presC}}"></div></div>
 </div>
 </div>
 </div>
+</sc-if>
+
+<sc-if value="{{boardOn}}" hint-placeholder-val="{{ false }}">
+<!-- Cartel del andén de la H: cuánto falta para que salga -->
+<div role="img" aria-label="Cartel del andén: {{boardTxt}}" style="position: absolute; right: 24px; top: 24px; z-index: 1000; width: 230px; height: 46px; background: #0b0c09; box-shadow: 0 0 0 3px #3b3d2c, 0 0 0 5px #070705; display: flex; align-items: center; gap: 12px; padding: 0 12px; box-sizing: border-box">
+<div style="width: 26px; height: 26px; border-radius: 50%; background: #f2c200; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 13px; color: #10110c">H</div>
+<span class="{{boardCls}}" style="font-family: 'VT323', monospace; font-size: 34px; line-height: 1; color: {{boardC}}; letter-spacing: 1px">{{boardTxt}}</span>
+</div>
+</sc-if>
+
+<!-- Pausa -->
+<button aria-label="Pausa" onPointerDown="{{stopEv}}" onClick="{{togglePause}}" style="all: unset; cursor: pointer; position: absolute; right: 24px; bottom: 22px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(14,15,10,.85); box-shadow: 0 0 0 2px #3b3d2c; z-index: 1002"><div style="width: 6px; height: 16px; background: #e6dfc0"></div><div style="width: 6px; height: 16px; background: #e6dfc0"></div></button>
+<sc-if value="{{pauseOn}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; background: rgba(7,7,5,.72); z-index: 1002; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; pointer-events: none">
+<div style="display: flex; gap: 16px"><div style="width: 26px; height: 80px; background: #e6dfc0; box-shadow: 0 0 0 4px #070705"></div><div style="width: 26px; height: 80px; background: #e6dfc0; box-shadow: 0 0 0 4px #070705"></div></div>
+<div style="display: flex; gap: 10px; align-items: center"><span class="key">ESC</span><span class="key">P</span></div>
+</div>
+</sc-if>
+
+<!-- Escape cierra el minijuego -->
+<sc-if value="{{escOn}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: 24px; top: 24px; z-index: 1001; display: flex; align-items: center; gap: 10px; pointer-events: none"><span class="key" style="height: 26px; font-size: 11px; padding: 0 8px">ESC</span><svg aria-hidden="true" width="22" height="22" viewBox="0 0 7 7" shape-rendering="crispEdges"><rect x="0" y="0" width="2" height="2" fill="#e6dfc0"></rect><rect x="5" y="0" width="2" height="2" fill="#e6dfc0"></rect><rect x="2" y="2" width="3" height="3" fill="#e6dfc0"></rect><rect x="0" y="5" width="2" height="2" fill="#e6dfc0"></rect><rect x="5" y="5" width="2" height="2" fill="#e6dfc0"></rect></svg></div>
+</sc-if>
 
 <!-- Flecha en el borde: hacia dónde está el oficial o el personal -->
 <sc-if value="{{edgeOn}}" hint-placeholder-val="{{ false }}">
@@ -260,15 +294,15 @@ body{margin:0;background:#0a0a07}
 
 <!-- Notificación: grande, vibra, titila y tapa la vista (clic para cerrarla) -->
 <sc-if value="{{peekOn}}" hint-placeholder-val="{{ false }}">
-<div class="redpulse" style="position: absolute; inset: 0; box-shadow: inset 0 0 0 10px #e05a4a, inset 0 0 120px rgba(224,90,74,.7); pointer-events: none; z-index: 1000"></div>
-<div style="position: absolute; left: 340px; top: 150px; width: 600px; z-index: 1001" onPointerDown="{{dismissPeek}}">
+<div class="redpulse" style="position: absolute; inset: 0; box-shadow: inset 0 0 0 8px #e05a4a, inset 0 0 90px rgba(224,90,74,.6); pointer-events: none; z-index: 999"></div>
+<div style="position: absolute; left: 500px; top: 22px; width: 520px; z-index: 1001" onPointerDown="{{dismissPeek}}">
 <div class="pop">
-<div class="buzz alarm" style="background: #10110c; border-radius: 14px; padding: 18px 22px; display: flex; align-items: center; gap: 20px; cursor: pointer">
-<div style="width: 76px; height: 76px; border-radius: 50%; flex-shrink: 0; background: {{ntAvBg}}; color: {{ntAvFg}}; box-shadow: 0 0 0 4px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 34px">{{ntAv}}</div>
+<div class="buzz alarm" style="background: #10110c; border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 16px; cursor: pointer">
+<div style="width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; background: {{ntAvBg}}; color: {{ntAvFg}}; box-shadow: 0 0 0 4px #070705; display: flex; align-items: center; justify-content: center; font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 28px">{{ntAv}}</div>
 <div style="display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0">
 <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 15px; letter-spacing: 2px; color: #e6dfc0">{{ntWho}}</span><span style="font-size: 24px; color: #8f8c72">{{phoneTime}}</span></div>
 <div style="display: flex; align-items: center; gap: 14px; min-height: 56px">
-<sc-if value="{{ntIsText}}" hint-placeholder-val="{{ false }}"><span style="font-size: 64px; line-height: .8; color: {{ntColor}}">{{ntText}}</span></sc-if>
+<sc-if value="{{ntIsText}}" hint-placeholder-val="{{ false }}"><span style="font-size: 52px; line-height: .8; color: {{ntColor}}">{{ntText}}</span></sc-if>
 <sc-if value="{{peekClock}}" hint-placeholder-val="{{ true }}"><svg role="img" aria-label="Un reloj" width="56" height="56" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="9" y="0" width="2" height="2" fill="#e05a4a"></rect><rect x="2" y="2" width="8" height="1" fill="#e05a4a"></rect><rect x="1" y="3" width="10" height="6" fill="#e05a4a"></rect><rect x="2" y="9" width="8" height="1" fill="#e05a4a"></rect><rect x="2" y="4" width="8" height="4" fill="#f4f0dc"></rect><rect x="3" y="3" width="6" height="1" fill="#f4f0dc"></rect><rect x="3" y="8" width="6" height="1" fill="#f4f0dc"></rect><rect x="6" y="3" width="1" height="3" fill="#10110c"></rect><rect x="6" y="6" width="2" height="1" fill="#10110c"></rect></svg></sc-if>
 <sc-if value="{{peekAngry}}" hint-placeholder-val="{{ false }}"><svg role="img" aria-label="Una cara enojada" width="56" height="56" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="4" y="1" width="4" height="1" fill="#e05a4a"></rect><rect x="2" y="2" width="8" height="1" fill="#e05a4a"></rect><rect x="1" y="3" width="10" height="6" fill="#e05a4a"></rect><rect x="2" y="9" width="8" height="1" fill="#e05a4a"></rect><rect x="4" y="10" width="4" height="1" fill="#e05a4a"></rect><rect x="3" y="4" width="2" height="1" fill="#10110c"></rect><rect x="5" y="5" width="1" height="1" fill="#10110c"></rect><rect x="7" y="4" width="2" height="1" fill="#10110c"></rect><rect x="6" y="5" width="1" height="1" fill="#10110c"></rect><rect x="4" y="8" width="4" height="1" fill="#10110c"></rect></svg></sc-if>
 <sc-if value="{{ntHeart}}" hint-placeholder-val="{{ false }}"><svg role="img" aria-label="Un corazón" width="56" height="56" viewBox="0 0 10 10" shape-rendering="crispEdges"><rect x="1" y="2" width="3" height="1" fill="#e05a4a"></rect><rect x="6" y="2" width="3" height="1" fill="#e05a4a"></rect><rect x="0" y="3" width="10" height="3" fill="#e05a4a"></rect><rect x="1" y="6" width="8" height="1" fill="#e05a4a"></rect><rect x="2" y="7" width="6" height="1" fill="#e05a4a"></rect><rect x="3" y="8" width="4" height="1" fill="#e05a4a"></rect><rect x="4" y="9" width="2" height="1" fill="#e05a4a"></rect></svg></sc-if>
@@ -314,11 +348,12 @@ body{margin:0;background:#0a0a07}
 </sc-if>
 
 <!-- Finales -->
+<div aria-live="polite" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">{{liveMsg}}</div>
 <sc-if value="{{endLate}}" hint-placeholder-val="{{ false }}">
-<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalTarde" res="{{resStr}}" slip="{{slipStr}}" hint-size="1280px,720px"></dc-import></div>
+<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalTarde" res="{{resStr}}" slip="{{slipStr}}" hora="{{horaStr}}" left="{{leftStr}}" hint-size="1280px,720px"></dc-import></div>
 </sc-if>
 <sc-if value="{{endCancel}}" hint-placeholder-val="{{ false }}">
-<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalChoque" res="{{resStr}}" slip="{{slipStr}}" hint-size="1280px,720px"></dc-import></div>
+<div class="fadein" style="position: absolute; inset: 0; z-index: 1003"><dc-import name="FinalChoque" res="{{resStr}}" slip="{{slipStr}}" hora="{{horaStr}}" left="{{leftStr}}" hint-size="1280px,720px"></dc-import></div>
 </sc-if>
 <sc-if value="{{ended}}" hint-placeholder-val="{{ false }}">
 <div style="position: absolute; right: 32px; top: 28px; z-index: 1004"><button class="restart" onPointerDown="{{stopEv}}" onClick="{{restart}}"><span style="color: #10110c; background: #e6dfc0; padding: 1px 6px">R</span>OTRA VEZ</button></div>
@@ -333,7 +368,6 @@ class Component extends DCLogic {
     this.stageRef = (el) => { this.stage = el; };
     this.loop = this.loop.bind(this);
     this.SEG = 1280; this.W = 7 * 1280;
-    const B = (id) => '/_blob/' + id;
     this.SEGS = [
       { bg: 'assets/img/tramo0.png', glow: 'assets/img/luz0.png', fg: null, alt: 'Andén de la línea A, con afiches y grafitis frente a las vías' },
       { bg: 'assets/img/tramo1.png', glow: 'assets/img/luz1.png', fg: null, alt: 'Pasillo de combinación con azulejos, carteles y grafitis' },
@@ -348,8 +382,15 @@ class Component extends DCLogic {
       ambiente: 'assets/snd/ambiente.mp3', artista: 'assets/snd/artista.mp3', papel: 'assets/snd/papel.mp3',
       puerta: 'assets/snd/puerta.mp3', timbre: 'assets/snd/timbre.mp3', tren: 'assets/snd/tren.mp3', ventiladores: 'assets/snd/ventiladores.mp3'
     };
-    // avisos del celular según lo que queda de tiempo: muchos, y cada vez más seguidos
-    this.NOTIFS = [[560, 'subte'], [420, 'ask'], [290, 'clock'], [170, 'group'], [60, 'angry'], [-60, 'late'], [-220, 'call'], [-400, 'late']];
+    // avisos del celular a lo largo del recorrido (segundos reales de juego)
+    this.NOTIFS = [[7, 'subte'], [30, 'ask'], [56, 'group'], [84, 'clock'], [112, 'angry'], [145, 'call'], [180, 'angry'], [220, 'call'], [265, 'late']];
+    this.reduced = (() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+    this.timers = [];
+    this.onKeyDown = (e) => this.keyDown(e);
+    this.onKeyUp = (e) => this.keyUp(e);
+    this.onBlur = () => this.clearInput();
+    this.onVis = () => { if (document.hidden) this.clearInput(); };
+    this.onWinUp = (e) => this.pointerUp(e);
     // plano de la combinación (coordenadas dentro del panel)
     this.TPATH = [[90, 150], [250, 150], [310, 205], [470, 205], [470, 305], [570, 360], [570, 445]];
     this.TLINES = [
@@ -363,13 +404,17 @@ class Component extends DCLogic {
 
   /* ================= estado ================= */
   L(s, x) { return s * 1280 + x; }
+  later(fn, ms) { const id = setTimeout(() => { this.timers = this.timers.filter((t) => t !== id); fn(); }, ms); this.timers.push(id); return id; }
+  clearInput() { const g = this.g; g.keys = {}; g.hold = false; g.mouseHold = false; g.walkTo = null; if (g.mini && g.mini.drag) { g.mini.drag = false; g.mini.cur = null; } this.holdStop(); }
   reset() {
+    (this.timers || []).forEach((t) => clearTimeout(t)); this.timers = [];
+    this.holdStop();
     this.g = {
       x: 110, y: 470, face: 1, left: 600, ff: 0, helps: 0, ignores: 0, res: Array(10).fill(null), phase: 'intro', t: 0, hold: false, keys: {},
       alt: { last: null, n: 0, at: 0 }, moved: false, dist: 0, peekT: 0, peekKind: null, peeked: {}, notifQ: [], buzzT: 0, stopT: 0, warmT: 0, grayT: 0,
       flashAt: { x: 640, y: 360 }, parts: [], focus: 0, bumpT: 0, squashT: 0, beatT: 0, walkTo: null, stuckT: 0, mouseHold: false,
       trainX: 0, trainV: 0, trainT: 0, camX: 0, camY: 0, camInit: false, costT: 0, costTxt: '', stun: 0, slipT: 0, slips: 0, safeT: 0, shakeT: 0, mini: null, prog: 0,
-      act: -1, inRange: false, noticed: -1, flick: 0, flickT: 6, flyT: 9, flyers: [], passT: 15, passer: null, readerFlash: 0,
+      act: -1, inRange: false, noticed: -1, readerFlash: 0, paused: false, taught: false, arriveT: 0, pushT: 0, kidPushT: 0, train: { x: -1400, state: 'away', v: 0 },
       queued: false, cutT: 0, grumbleT: 0, gateWas: null, gateWasQ: null, sceneT: 0, glowT: 0, hopT: 0, hopI: -1, sadT: 0, sadI: -1, popT: 0, near: 0
     };
     this.setupWorld();
@@ -381,16 +426,16 @@ class Component extends DCLogic {
     g.ask = { y: 620, moving: false, contact: false };
     g.art = { coin: false };
     g.trash = { up: false };
-    g.fight = { phase: 0, t: 0, ax: L(3, 880), bx: L(3, 930), y: 395, guard: null };
-    g.vend = { kid: false, kidDone: false, kx: L(4, 650), ky: 672 };
+    g.fight = { phase: 0, t: 0, ax: L(3, 960), bx: L(3, 1010), y: 395, guard: null };
+    g.vend = { kx: L(4, 660), ky: 672 };
     g.lift = { stage: 0, px: L(4, 1110), py: 345 };
     g.off = { x: L(4, 300), y: 520, tx: L(4, 300), ty: 520, wait: 1, face: 1, moving: false, stuck: false };
-    g.sen = { x: L(5, 718) };
+    g.sen = { x: L(5, 718), y: 410 };
     g.kid = { x: L(6, 380), y: 470, stage: 0, face: 1, t: 0, parent: null, moving: false };
-    g.guards = [{ x: L(5, 860), y: 560, face: -1 }, { x: L(6, 1060), y: 400, face: -1 }];
-    g.cleaner = { x: L(3, 160), y: 540, face: 1, dropT: 0 };
+    g.guards = [{ x: L(5, 860), y: 560, face: -1 }, { x: L(6, 560), y: 400, face: -1 }];
+    g.cleaner = { x: L(3, 140), y: 560, face: 1, dropT: 0 };
     g.puddles = [];
-    for (let i = 0; i < 16; i++) g.puddles.push({ x: L(3, 160 + i * 24), y: 540 + Math.sin(i) * 6, t: 4 + i * 0.4 });
+    for (let i = 0; i < 12; i++) g.puddles.push({ x: L(3, 140 + i * 24), y: 560 + Math.sin(i) * 6, t: 4 + i * 0.4 });
     g.queue = [0, 1, 2].map((k) => ({ row: Math.floor(r() * 12), x: L(5, 660) - k * 36, y: 654, state: 'wait', moving: false, ph: r() * 6 }));
     g.qSpawnT = 3;
     this.makeCrowd();
@@ -401,12 +446,12 @@ class Component extends DCLogic {
     const crowd = [];
     const idle = [[0, 1000, 340], [0, 1180, 460], [0, 250, 610], [0, 420, 345], [0, 860, 350],
       [1, 640, 330], [1, 460, 680], [1, 1180, 350], [2, 360, 345], [2, 200, 350], [2, 860, 345], [2, 300, 672],
-      [3, 1000, 350], [3, 1150, 620], [4, 200, 350], [4, 520, 340], [4, 330, 350], [4, 1000, 360], [5, 300, 340], [5, 930, 360], [5, 1110, 560], [5, 160, 470], [5, 420, 350],
-      [6, 100, 400], [6, 232, 385], [6, 496, 390], [6, 616, 430], [6, 742, 392], [6, 858, 415], [6, 985, 400], [6, 1198, 415], [6, 282, 515], [6, 928, 530], [6, 1140, 520]];
+      [3, 1000, 350], [3, 1150, 620], [4, 200, 350], [4, 520, 340], [4, 330, 350], [5, 300, 340], [5, 930, 360], [5, 1110, 560], [5, 160, 470], [5, 420, 350],
+      [6, 100, 400], [6, 232, 385], [6, 470, 345], [6, 742, 352], [6, 1060, 350], [6, 1198, 415], [6, 282, 560], [6, 1140, 560]];
     idle.forEach((p) => crowd.push({ row: Math.floor(r() * 12), x: L(p[0], p[1]), y: p[2], vx: 0, idle: true, ph: r() * 6, phone: r() < 0.5, react: 0 }));
     // gente que filma la pelea con el celular
-    crowd.push({ row: 3, x: L(3, 760), y: 430, vx: 0, idle: true, ph: 0, phone: true, rec: true, react: 0 });
-    crowd.push({ row: 9, x: L(3, 1050), y: 440, vx: 0, idle: true, ph: 1, phone: true, rec: true, react: 0 });
+    crowd.push({ row: 3, x: L(3, 860), y: 430, vx: 0, idle: true, ph: 0, phone: true, rec: true, react: 0 });
+    crowd.push({ row: 9, x: L(3, 1150), y: 440, vx: 0, idle: true, ph: 1, phone: true, rec: true, react: 0 });
     const n = this.props.crowd ?? 30;
     for (let i = 0; i < n; i++) {
       const zoneB = r() < 0.12;
@@ -464,7 +509,7 @@ class Component extends DCLogic {
         s.connect(gn); node.connect(A.sfxG); s.start();
       } catch (e) {}
     };
-    if (o.delay) setTimeout(go, o.delay); else go();
+    if (o.delay) this.later(go, o.delay); else go();
   }
   tone(type, f0, f1, dur, vol, filt) {
     const A = this.A; if (!A || this.props.sound === false) return;
@@ -482,12 +527,11 @@ class Component extends DCLogic {
     const A = this.A; if (!A || this.props.sound === false) return;
     try {
       const ctx = A.ctx, t = ctx.currentTime;
-      const len = Math.floor(ctx.sampleRate * dur), b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-      const s = ctx.createBufferSource(); s.buffer = b;
+      if (!this.noiseBuf) { const len = ctx.sampleRate * 2, b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; this.noiseBuf = b; }
+      const s = ctx.createBufferSource(); s.buffer = this.noiseBuf; s.loop = dur > 2;
       const f = ctx.createBiquadFilter(); f.type = type || 'bandpass'; f.Q.value = 1.2; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
       const gn = ctx.createGain(); gn.gain.setValueAtTime(vol, t); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      s.connect(f); f.connect(gn); gn.connect(A.sfxG); s.start(t);
+      s.connect(f); f.connect(gn); gn.connect(A.sfxG); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
     } catch (e) {}
   }
   note(f, t0, dur, vol, type, cut) {
@@ -513,16 +557,18 @@ class Component extends DCLogic {
     this.note(116.54, 0.15, 0.4, 0.06, 'triangle', 500);
     this.noise(0.12, 0.06, 260, 120, 'lowpass');
   }
+  // seguir de largo: una nota que baja, suave (sin castigo)
+  sigh() { this.note(392, 0, 0.18, 0.025, 'triangle', 900); this.note(329.63, 0.16, 0.3, 0.02, 'triangle', 800); }
   oops() { this.note(146.83, 0, 0.09, 0.05, 'square', 800); this.note(138.59, 0.08, 0.12, 0.04, 'square', 700); }
-  heartbeat(k) { this.tone('sine', 78, 48, 0.16, 0.05 + 0.22 * k, 300); setTimeout(() => this.tone('sine', 70, 44, 0.14, 0.03 + 0.14 * k, 300), 170); }
+  heartbeat(k) { this.tone('sine', 78, 48, 0.16, 0.05 + 0.22 * k, 300); this.later(() => this.tone('sine', 70, 44, 0.14, 0.03 + 0.14 * k, 300), 170); }
   chime() { this.note(987.77, 0, 0.09, 0.03, 'square', 3000); this.note(1318.5, 0.08, 0.2, 0.025, 'square', 3000); }
   tick() { this.noise(0.04, 0.18, 3200, 1800, 'bandpass'); }
-  vibrate() { [0, 140, 280, 420, 560].forEach((d) => setTimeout(() => this.tone('square', 150, 140, 0.1, 0.09, 300), d)); }
+  vibrate() { [0, 140, 280].forEach((d) => this.later(() => this.tone('square', 150, 140, 0.1, 0.09, 300), d)); }
   ding() { this.note(1760, 0, 0.12, 0.07, 'square', 4000); this.note(2349, 0.1, 0.25, 0.06, 'square', 4000); }
   whoosh() { this.noise(0.55, 0.07, 400, 2600, 'bandpass'); }
   bump() { this.noise(0.08, 0.08, 300, 160, 'lowpass'); }
   siren() { for (let i = 0; i < 6; i++) this.note(i % 2 ? 660 : 880, i * 0.22, 0.2, 0.05, 'square', 2400); }
-  slipSnd() { this.tone('sine', 1400, 300, 0.25, 0.08, 4000); setTimeout(() => this.noise(0.22, 0.2, 220, 80, 'lowpass'), 220); }
+  slipSnd() { this.tone('sine', 1400, 300, 0.25, 0.08, 4000); this.later(() => this.noise(0.22, 0.2, 220, 80, 'lowpass'), 220); }
   grumble() { for (let i = 0; i < 4; i++) this.note(110 + Math.random() * 90, i * 0.07, 0.07, 0.05, 'sawtooth', 700); this.noise(0.25, 0.05, 500, 300); }
   thump() { this.noise(0.09, 0.12, 180, 90, 'lowpass'); }
   holdStart() {
@@ -555,14 +601,16 @@ class Component extends DCLogic {
     const g = this.g;
     this.set(A.master.gain, this.masterVol(), 0.1);
     const ended = g.phase === 'end';
-    let amb = 0.32 * (1 + g.ignores * 0.12) * (1 - 0.6 * g.focus);
+    let amb = 0.32 * (1 + g.ignores * 0.05) * (1 - 0.6 * g.focus);
+    if (g.paused) amb *= 0.3;
     if (g.warmT > 0) amb *= 0.55;
-    if (ended) amb = g.helps >= 5 ? 0.18 : 0.55;
+    if (ended) amb = g.left <= 0 ? 0.18 : 0.5;
     this.set(A.ambG.gain, amb, 0.35);
     let cut = 16000 - 15000 * g.focus;
     if (g.peekT > 2.4) cut = Math.min(cut, 1500);
     if (g.stun > 0) cut = Math.min(cut, 900);
-    if (ended && g.helps < 5) cut = 1400;
+    if (ended && g.left > 0) cut = 1400;
+    if (g.paused) cut = 600;
     this.set(A.ambF.frequency, Math.max(500, cut), 0.2);
     const s = Math.floor(g.x / 1280);
     this.set(A.fanG.gain, ended ? 0.15 : (s >= 1 && s <= 3 ? 0.4 : 0.25), 0.5);
@@ -583,12 +631,15 @@ class Component extends DCLogic {
 
   /* ================= ciclo ================= */
   componentDidMount() {
+    try { window.addEventListener('blur', this.onBlur); document.addEventListener('visibilitychange', this.onVis); window.addEventListener('pointerup', this.onWinUp); } catch (e) {}
     this.last = performance.now();
     this.raf = requestAnimationFrame(this.loop);
     setTimeout(() => this.focus(), 50);
   }
   componentWillUnmount() {
     cancelAnimationFrame(this.raf);
+    try { window.removeEventListener('blur', this.onBlur); document.removeEventListener('visibilitychange', this.onVis); window.removeEventListener('pointerup', this.onWinUp); } catch (e) {}
+    (this.timers || []).forEach((t) => clearTimeout(t));
     this.holdStop();
     if (this.A) { [this.A.amb, this.A.fan, this.A.art].forEach((a) => { try { a.pause(); } catch (e) {} }); try { this.A.ctx.close(); } catch (e) {} }
   }
@@ -596,7 +647,7 @@ class Component extends DCLogic {
   loop(now) {
     const raw = Math.min(0.5, Math.max(0, (now - this.last) / 1000));
     this.last = now;
-    for (let rest = raw; rest > 0.0001; rest -= 0.05) this.update(Math.min(0.05, rest));
+    if (!this.g.paused) for (let rest = raw; rest > 0.0001; rest -= 0.05) this.update(Math.min(0.05, rest));
     this.mix();
     this.forceUpdate();
     this.raf = requestAnimationFrame(this.loop);
@@ -628,10 +679,10 @@ class Component extends DCLogic {
     const g = this.g, L = (s, x) => this.L(s, x);
     for (const o of this.statics()) if (x > o[0] - 12 && x < o[1] + 12 && y > o[2] && y < o[3] + 6) return false;
     // quien pregunta se te pone adelante
-    if (g.res[2] === null && x > L(1, 930) && x < L(1, 1045) && Math.abs(y - g.ask.y) < 44) return false;
+    if (g.res[2] === null && x > px && x > L(1, 930) && x < L(1, 1045) && Math.abs(y - g.ask.y) < 44) return false;
     // la fila de molinetes: solo se pasa por un carril abierto
     if (x > L(5, 672) && x < L(5, 768)) {
-      const lane1 = Math.abs(y - 410) < 16 && g.res[8] === 'help' && g.sen.x > L(5, 760);
+      const lane1 = Math.abs(y - 410) < 16 && g.res[8] === 'help' && g.sen.x > L(5, 790);
       const lane3 = Math.abs(y - 654) < 16 && this.gateOpen();
       if (!lane1 && !lane3) return false;
     }
@@ -656,23 +707,23 @@ class Component extends DCLogic {
   help(i) {
     const g = this.g;
     if (g.res[i]) return;
-    g.res[i] = 'help'; g.helps++; g.ff += 120; g.costT = 1.7; g.costTxt = '-2:00';
+    g.res[i] = 'help'; g.helps++; g.ff += 120; g.costT = 1.7; g.costTxt = "-2'00\"";
     const t = this.target(i, true);
     g.stopT = 0.11; g.warmT = 0.9; g.glowT = 1.8; g.hopT = 0.45; g.hopI = i; g.flashAt = { x: t.x, y: t.y - 30 };
     this.burst(t.x, t.y - 40);
     g.mini = null; g.prog = 0; this.holdStop();
-    if (i === 6) { g.vend.kid = false; g.vend.kidDone = true; }
+    if (i === 0) g.taught = true;
     this.good();
   }
-  ignore(i) {
+  ignore(i, quiet) {
     const g = this.g;
     if (g.res[i]) return;
-    g.res[i] = 'ignore'; g.ignores++; g.grayT = 0.8; g.shakeT = 0.18; g.sadT = 1.8; g.sadI = i;
+    g.res[i] = 'ignore'; g.ignores++;
+    if (!quiet) { g.grayT = 0.5; g.sadT = 1.8; g.sadI = i; this.sigh(); }
     if (g.act === i) { g.mini = null; g.prog = 0; }
     this.holdStop();
-    if (i === 6) { g.vend.kid = false; g.vend.kidDone = true; }
-    if (i === 9 && g.kid.stage === 1) g.kid.stage = 0;
-    this.bad();
+    if (i === 7) { g.lift.stage = 0; g.off.stuck = false; g.off.wait = 0.5; }
+    if (i === 9 && g.kid.stage === 1) { g.kid.stage = 0; g.kid.moving = false; }
   }
   /* dónde está cada situación y desde dónde se actúa */
   target(i, force) {
@@ -684,10 +735,10 @@ class Component extends DCLogic {
       case 2: return { x: L(1, 985), y: g.ask.y };
       case 3: return { x: L(2, 590), y: 330 };
       case 4: return { x: L(2, 1080), y: 352 };
-      case 5: return { x: L(3, 640), y: 262, obj: true };
+      case 5: return { x: L(3, 720), y: 262, obj: true };
       case 6: return { x: L(4, 720), y: 655 };
       case 7: return g.lift.stage === 1 ? { x: g.off.x, y: g.off.y } : { x: g.lift.px, y: g.lift.py };
-      case 8: return { x: g.sen.x, y: 410 };
+      case 8: return { x: g.sen.x, y: g.sen.y };
       case 9: return { x: g.kid.x, y: g.kid.y, kid: true };
     }
     return null;
@@ -700,7 +751,7 @@ class Component extends DCLogic {
       case 2: return { x: L(1, 900), y: g.ask.y };
       case 3: return { x: L(2, 560), y: 380 };
       case 4: return { x: L(2, 1030), y: 392 };
-      case 5: return { x: L(3, 640), y: 340 };
+      case 5: return { x: L(3, 720), y: 340 };
       case 6: return { x: L(4, 676), y: 650 };
       case 7: return g.lift.stage === 1 ? { x: g.off.x - 50, y: g.off.y } : { x: g.lift.px - 60, y: g.lift.py + 20 };
       case 8: return { x: L(5, 650), y: 410 };
@@ -719,8 +770,8 @@ class Component extends DCLogic {
   pointer(e) {
     const g = this.g;
     this.unlock(); this.focus();
-    try { if (g.mini && g.mini.type === 'trace') { e.preventDefault(); this.stage.setPointerCapture(e.pointerId); } } catch (err) {}
-    if (g.phase !== 'play' || !this.stage) return;
+    try { e.preventDefault(); this.stage.setPointerCapture(e.pointerId); } catch (err) {}
+    if (g.phase !== 'play' || g.paused || !this.stage) return;
     const { sx, sy, x, y } = this.pointerXY(e);
     const m = g.mini;
     if (m && m.type === 'trace') { this.traceDown(sx - 160, sy - 110); return; }
@@ -728,7 +779,7 @@ class Component extends DCLogic {
     if (m && m.type === 'rh') { this.press(); return; }
     if (g.stun > 0) return;
     // amague: clics rápidos sobre tu propio personaje
-    if (((g.act === 2 && g.ask.contact) || (g.act === 6 && g.vend.kid)) && Math.hypot(x - g.x, y - (g.y - 36)) < 46) {
+    if (g.act === 2 && g.ask.contact && Math.hypot(x - g.x, y - (g.y - 36)) < 46) {
       this.alternate(g.alt.last === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft');
       return;
     }
@@ -747,7 +798,9 @@ class Component extends DCLogic {
   }
   pointerMove(e) {
     const g = this.g, m = g.mini;
-    if (!m || m.type !== 'trace' || !m.drag || !this.stage) return;
+    if (!m || !this.stage) return;
+    if (m.type === 'coin' && e.pointerType === 'mouse') { const q = this.pointerXY(e); m.cx = q.x; m.cy = q.y; return; }
+    if (m.type !== 'trace' || !m.drag) return;
     const { sx, sy } = this.pointerXY(e);
     this.traceMove(sx - 160, sy - 110);
   }
@@ -811,20 +864,23 @@ class Component extends DCLogic {
     this.updateHelpers(dt);
     this.updateQueue(dt);
     this.updateCam(dt);
+    this.updateTrain(dt);
     if (g.phase === 'end' || g.phase === 'intro') return;
+    if (g.phase === 'arrive') { this.arrive(dt); return; }
     this.indicators(dt);
     if (g.trainX < 1500) {
       g.trainT += dt;
       if (g.trainT > 2.6) { g.trainV = Math.min(900, g.trainV + 220 * dt); g.trainX += g.trainV * dt; }
       else if (g.trainT > 2.3) g.shakeT = Math.max(g.shakeT, 0.05);
     }
+    // el reloj es lo que falta para que salga el tren de la H: solo baja con lo que perdés
     if (g.ff > 0) { const d = Math.min(g.ff, 160 * dt); g.left -= d; g.ff -= d; }
-    else g.left -= (this.props.clockRate ?? 5) * dt;
-    this.NOTIFS.forEach(([th, kind]) => { if (g.left <= th && !g.peeked[th]) { g.peeked[th] = true; g.notifQ.push(kind); } });
+    this.NOTIFS.forEach(([th, kind]) => { if (g.t >= th && !g.peeked[th]) { g.peeked[th] = true; g.notifQ.push({ kind, at: g.t }); } });
+    g.notifQ = g.notifQ.filter((n) => g.t - n.at < 20);  // los avisos viejos se descartan
     g.peekT -= dt;
-    const busy = !!g.mini || (g.hold && g.prog > 0) || g.stun > 0;
+    const busy = !!g.mini || (g.hold && g.prog > 0) || g.stun > 0 || (g.inRange && g.near > 0.35);
     if (busy && g.peekT > 0) g.peekT = 0;
-    if (!busy && g.peekT <= -2.5 && g.notifQ.length) { g.unread = (g.unread || 0) + (g.peekKind === 'subte' ? 0 : 1 + Math.floor(Math.random() * 3)); g.newT = 1.2; g.peekKind = g.notifQ.shift(); g.peekT = 2.6; g.buzzT = 0; this.ding(); g.shakeT = Math.max(g.shakeT, 0.35); }
+    if (!busy && g.peekT <= -2.5 && g.notifQ.length) { g.unread = (g.unread || 0) + (g.peekKind === 'subte' ? 0 : 1 + Math.floor(Math.random() * 3)); g.newT = 1.2; g.peekKind = g.notifQ.shift().kind; g.peekT = 2.6; g.buzzT = 0; this.ding(); if (!this.reduced) g.shakeT = Math.max(g.shakeT, 0.25); }
     if (g.peekT > 0) { g.buzzT -= dt; if (g.buzzT <= 0) { g.buzzT = 0.75; this.vibrate(); } }
     if (g.shakeT > 0) g.shakeT -= dt;
     // movimiento
@@ -839,9 +895,17 @@ class Component extends DCLogic {
       const L5 = this.L(5, 0);
       // cruzar los molinetes por un carril
       if (g.walkTo.x > L5 + 768 && g.x < L5 + 770 && g.x > L5 + 400) {
-        const ly = g.res[8] === 'help' && g.sen.x > L5 + 760 ? 410 : 654;
-        if (Math.abs(g.y - ly) > 6 && g.x < L5 + 664) aim = { x: Math.min(Math.max(g.x, L5 + 560), L5 + 652), y: ly };
-        else { aim = { x: L5 + 790, y: ly }; if (ly === 654 && !this.gateOpen() && g.x > L5 + 630 && g.x < L5 + 674) wait = true; }
+        const ly = g.res[8] === 'help' && g.sen.x > L5 + 790 ? 410 : 654;
+        // por el molinete que anda se va al final de la fila, no adelante
+        const waiting = g.queue.filter((q) => q.state === 'wait' && q.x < L5 + 690);
+        const back = ly === 654 && waiting.length && !g.queued ? Math.min(...waiting.map((q) => q.x)) - 40 : L5 + 652;
+        if (Math.abs(g.y - ly) > 6 && g.x < L5 + 664) aim = { x: Math.min(Math.max(Math.min(g.x, back), L5 + 380), L5 + 652), y: ly };
+        else {
+          aim = { x: L5 + 790, y: ly };
+          if (ly === 654 && !this.gateOpen() && g.x > L5 + 630 && g.x < L5 + 674) wait = true;
+          const ahead = waiting.filter((q) => q.x > g.x);
+          if (ly === 654 && ahead.length && Math.min(...ahead.map((q) => q.x)) - g.x < 44) wait = true;
+        }
       }
       const wx = aim.x - g.x, wy = aim.y - g.y, wd = Math.hypot(wx, wy);
       if (aim === g.walkTo && wd < 6) g.walkTo = null; else if (!wait && wd > 0.5) { dx = wx / wd; dy = wy / wd; }
@@ -851,15 +915,18 @@ class Component extends DCLogic {
     if (g.mini) this.updateMini(dt, dx, dy);
     else if (dx || dy) {
       const len = Math.hypot(dx, dy);
-      const sp = (this.props.speed ?? 230) * dt * (g.vend.kid ? 0.3 : 1);
+      const sp = (this.props.speed ?? 230) * dt;
       const nx = Math.min(this.W - 20, Math.max(20, g.x + (dx / len) * sp));
       const ny = Math.min(688, Math.max(318, g.y + (dy / len) * sp));
       if (this.free(nx, ny, g.x, g.y)) { g.x = nx; g.y = ny; }
       else if (this.free(nx, g.y, g.x, g.y)) g.x = nx;
-      else if (this.free(g.x, ny, g.x, g.y)) g.y = ny;
-      else if (g.walkTo) { // rodear a quien está en el camino
-        const side = (Math.floor(g.t * 0.5) % 2 ? 1 : -1);
-        if (this.free(g.x, g.y + side * sp, g.x, g.y)) g.y = Math.min(688, Math.max(318, g.y + side * sp));
+      else if (Math.abs(ny - g.y) > 0.3 && this.free(g.x, ny, g.x, g.y)) g.y = ny;
+      else if (g.walkTo) { // rodear a quien está en el camino: probar arriba y abajo
+        const side = g.dodge || (g.walkTo.y >= g.y ? 1 : -1);
+        const tryY = (sd) => { const yy = Math.min(688, Math.max(318, g.y + sd * sp)); return yy !== g.y && this.free(g.x, yy, g.x, g.y) ? yy : null; };
+        let yy = tryY(side);
+        if (yy === null) { yy = tryY(-side); if (yy !== null) g.dodge = -side; } else g.dodge = side;
+        if (yy !== null) g.y = yy;
       }
       if (g.x === px0 && g.y === py0 && g.bumpT <= 0) {
         g.bumpT = 0.5; g.squashT = 0.12; this.bump();
@@ -869,7 +936,11 @@ class Component extends DCLogic {
       if (Math.abs(dx) > 0.2) g.face = Math.sign(dx);
       g.moving = g.x !== px0 || g.y !== py0;
       if (g.moving) { g.moved = true; g.dist += Math.hypot(g.x - px0, g.y - py0); }
-      if (g.walkTo) { if (Math.hypot(g.x - px0, g.y - py0) < 0.3) { g.stuckT += dt; if (g.stuckT > 0.6) { g.walkTo = null; g.stuckT = 0; } } else g.stuckT = 0; }
+      if (g.walkTo) { if (Math.hypot(g.x - px0, g.y - py0) < 0.3) { g.stuckT += dt; if (g.stuckT > 1.2) { g.walkTo = null; g.stuckT = 0; } } else g.stuckT = 0; }
+      if (!g.walkTo) g.dodge = 0;
+      // empujar a quien pregunta: a los pocos segundos se corre y seguís de largo
+      if (g.act === 2 && g.ask.contact && !g.res[2] && dx > 0 && g.x === px0) { g.pushT += dt; if (g.pushT > 1.4) { this.ignore(2); g.pushT = 0; } }
+      else g.pushT = Math.max(0, g.pushT - dt);
     }
     this.wetLogic(dt);
     this.events(dt);
@@ -887,13 +958,34 @@ class Component extends DCLogic {
     const o = this.gateOpen();
     if (g.gateWas !== null && o !== g.gateWas && Math.abs(g.x - (L5 + 720)) < 500) this.sfx('puerta', { rate: o ? 1.6 : 1.35, vol: 0.16, pan: 0.2 });
     g.gateWas = o;
-    // fin del recorrido: llegaste al andén de la H
-    if (g.x >= this.W - 90) {
-      for (let i = 0; i < 10; i++) if (!g.res[i]) this.ignore(i);
-      g.phase = 'end'; g.mini = null; this.holdStop();
-      if (g.helps >= 5) { this.sfx('timbre', { vol: 0.7 }); this.sfx('puerta', { delay: 2300 }); this.sfx('tren', { delay: 2900, vol: 0.8 }); }
-      else { this.bad(); this.noise(1.6, 0.05, 900, 200, 'lowpass'); }
+    // llegaste al andén de la H
+    if (g.x >= this.L(6, 790)) {
+      for (let i = 0; i < 10; i++) if (!g.res[i]) this.ignore(i, true);
+      g.phase = 'arrive'; g.arriveT = 0; g.mini = null; g.keys = {}; g.hold = false; g.mouseHold = false; g.peekT = 0; this.holdStop();
+      g.late = g.left <= 0;
+      if (g.late && g.train.state !== 'stop') { g.train.state = 'stop'; g.train.x = 0; }
+      if (!g.late) { this.sfx('timbre', { vol: 0.5, rate: 0.8 }); }
     }
+  }
+  /* el tren de la H: llega cuando ya no te queda margen, y se va justo cuando llegás */
+  updateTrain(dt) {
+    const g = this.g, T = g.train;
+    if (T.state === 'away' && g.left <= 0 && g.x > this.L(5, 700) && g.phase === 'play') { T.state = 'in'; T.x = -1400; T.v = 1400; this.sfx('tren', { vol: 0.6, rate: 1.1, pan: -0.5 }); }
+    if (T.state === 'in') { T.v = Math.max(60, T.v - 900 * dt); T.x = Math.min(0, T.x + T.v * dt); if (T.x >= 0) { T.state = 'stop'; this.sfx('puerta', { vol: 0.6 }); } }
+    if (T.state === 'out') { T.v = Math.min(1100, T.v + 260 * dt); T.x += T.v * dt; if (T.x > 1500) T.state = 'gone'; }
+  }
+  arrive(dt) {
+    const g = this.g, T = g.train;
+    g.arriveT += dt;
+    // los últimos pasos los da solo
+    const tx = this.L(6, 880), d = tx - g.x;
+    if (Math.abs(d) > 2) { const st = Math.min(Math.abs(d), 150 * dt); g.x += Math.sign(d) * st; g.face = 1; g.moving = true; g.dist += st; } else g.moving = false;
+    this.events(dt);
+    if (g.late) {
+      if (g.arriveT > 0.4 && !g.doorsShut) { g.doorsShut = true; this.sfx('timbre', { vol: 0.7 }); this.sfx('puerta', { delay: 500, vol: 0.9 }); }
+      if (g.arriveT > 1.4 && T.state === 'stop') { T.state = 'out'; T.v = 40; this.sfx('tren', { vol: 0.9 }); g.shakeT = this.reduced ? 0 : 0.3; }
+      if (g.arriveT > 4.4) g.phase = 'end';
+    } else if (g.arriveT > 3.4) g.phase = 'end';
   }
   updateCam(dt) {
     const g = this.g, vw = this.viewW(), vh = 720 / this.Z();
@@ -907,27 +999,27 @@ class Component extends DCLogic {
   indicators(dt) {
     const g = this.g;
     if (g.newT > 0) g.newT -= dt;
-    g.batt = Math.max(3, 23 - Math.floor((600 - g.left) / 40));
+    g.batt = Math.max(3, 23 - Math.floor(g.t / 11));
     if (g.batt !== g.battWas) { if (g.battWas && g.batt <= 10) this.tone('square', 900, 900, 0.06, 0.04, 3000); g.battWas = g.batt; }
     const lost = g.left <= 0;
-    if (lost && !g.lostShown) { g.lostShown = true; g.lostT = 2.5; this.bad(); g.shakeT = 0.4; }
+    if (lost && !g.lostShown) { g.lostShown = true; g.lostT = 2.5; this.vibrate(); if (!this.reduced) g.shakeT = 0.3; }
     if (g.lostT > 0) g.lostT -= dt;
   }
   /* piso mojado: la persona que limpia deja una franja; si la pisás, te caés */
   wetLogic(dt) {
     const g = this.g, c = g.cleaner, L3 = this.L(3, 0);
     c.x += c.face * 42 * dt;
-    if (c.x > L3 + 540) c.face = -1;
-    if (c.x < L3 + 140) c.face = 1;
-    c.y = 540 + Math.sin(g.t * 0.7) * 10;
+    if (c.x > L3 + 420) c.face = -1;
+    if (c.x < L3 + 120) c.face = 1;
+    c.y = 560 + Math.sin(g.t * 0.7) * 10;
     c.dropT -= dt;
     if (c.dropT <= 0) { c.dropT = 0.28; g.puddles.push({ x: c.x + c.face * 22, y: c.y + 4, t: 0 }); }
     g.puddles = g.puddles.filter((p) => (p.t += dt) < 18);
     if (g.stun <= 0 && g.safeT <= 0 && g.moving && !g.mini) {
       const wet = g.puddles.some((p) => p.t < 15 && ((g.x - p.x) / 30) ** 2 + ((g.y - p.y) / 13) ** 2 < 1);
       if (wet) {
-        g.stun = 1.5; g.slipT = 1.5; g.safeT = 3.2; g.slips++; g.ff += 30; g.costT = 1.7; g.costTxt = '-0:30';
-        g.shakeT = 0.35; g.walkTo = null; g.hold = false; this.holdStop(); this.slipSnd();
+        g.stun = 1.5; g.slipT = 1.5; g.safeT = 3.2; g.slips++; g.ff += 30; g.costT = 1.7; g.costTxt = "-0'30\"";
+        g.shakeT = this.reduced ? 0 : 0.35; g.walkTo = null; g.hold = false; this.holdStop(); this.slipSnd();
         g.crowd.forEach((q) => { if (this.dist(q.x, q.y, g.x, g.y) < 260) { q.react = 1.6; q.rtag = 'ex'; } });
       }
     }
@@ -973,7 +1065,7 @@ class Component extends DCLogic {
     });
     if (open && g.gateWasQ === false && waiting.length && Math.abs(waiting[0].x - (L5 + 660)) < 6 && !front) waiting[0].state = 'pass';
     g.gateWasQ = open;
-    g.queue.forEach((q) => { if (q.state === 'pass') { q.x += 110 * dt; q.moving = true; if (q.x > L5 + 1400) q.state = 'gone'; } });
+    g.queue.forEach((q) => { if (q.state === 'pass') { q.x += 110 * dt; q.moving = true; if (q.x > L5 + 800 && !this.visible(q.x, 80)) q.state = 'gone'; } });
     g.queue = g.queue.filter((q) => q.state !== 'gone');
     g.qSpawnT -= dt;
     if (g.qSpawnT <= 0 && waiting.length < 4) { g.qSpawnT = 3 + Math.random() * 2; g.queue.push({ row: Math.floor(Math.random() * 12), x: L5 + 380, y: 600 + Math.random() * 80, state: 'wait', moving: true, ph: Math.random() * 6 }); }
@@ -1095,7 +1187,7 @@ class Component extends DCLogic {
       } else if (g.act === 0) g.inRange = this.dist(g.x, g.y, L(0, 1120), 640) < 120;
       if (g.x > L(0, 1260)) this.ignore(0);
     }
-    // 1 · persona durmiendo en un rincón: detenerse a mirar
+    // 1 · persona durmiendo en un rincón: dejarle un café y taparla
     if (!g.res[1]) {
       if (g.act === 1) g.inRange = near(1);
       if (holdAt(1, g.inRange)) this.help(1);
@@ -1120,7 +1212,7 @@ class Component extends DCLogic {
     if (!g.res[4]) {
       if (g.act === 4) g.inRange = near(4);
       if (holdAt(4, g.inRange)) { g.trash.up = true; this.sfx('papel', { rate: 1.2 }); this.help(4); }
-      if (g.x > L(3, 40)) this.ignore(4);
+      if (g.x > L(3, 60)) this.ignore(4);
     }
     // 5 · pelea: apretar el botón de emergencia (acercarse a separarlos te empuja)
     const F = g.fight;
@@ -1128,11 +1220,11 @@ class Component extends DCLogic {
     if (F.phase === 0) {
       if (Math.floor(F.t / 0.55) !== Math.floor((F.t - dt) / 0.55) && Math.abs(g.x - F.ax) < 900) this.thump();
       const fx = (F.ax + F.bx) / 2;
-      if (this.dist(g.x, g.y, fx, F.y) < 70 && g.stun <= 0) { g.x -= 46 * Math.sign(fx - g.x || 1); g.stun = 0.35; g.shakeT = 0.25; this.bump(); this.oops(); }
+      if (this.dist(g.x, g.y, fx, F.y) < 70 && g.stun <= 0) { g.x -= 46 * Math.sign(fx - g.x || 1); g.stun = 0.35; g.shakeT = this.reduced ? 0 : 0.25; this.bump(); }
     }
     if (!g.res[5]) {
       if (g.act === 5) g.inRange = near(5);
-      if (holdAt(5, g.inRange)) { this.siren(); F.phase = 1; F.guard = { x: L(3, 1320), y: 420, face: -1, moving: true }; this.help(5); }
+      if (holdAt(5, g.inRange)) { this.siren(); F.phase = 1; F.guard = { x: L(3, 1380), y: 420, face: -1, moving: true }; this.help(5); }
       if (g.x > L(3, 1200)) this.ignore(5);
     }
     if (F.phase === 1 && F.guard) {
@@ -1140,12 +1232,12 @@ class Component extends DCLogic {
       gd.x += Math.sign(d) * Math.min(Math.abs(d), 190 * dt); gd.moving = Math.abs(d) > 2; gd.y += (F.y + 20 - gd.y) * Math.min(1, dt * 2);
       if (Math.abs(d) < 3) { F.phase = 2; F.t = 0; }
     }
-    if (F.phase === 2) { F.ax -= 40 * dt; F.bx += 40 * dt; if (F.t > 4) F.phase = 3; }
+    // se separan y cada uno se va por su lado; desaparecen recién fuera de cuadro
+    if (F.phase === 2) { F.ax -= 90 * dt; F.bx += 90 * dt; if (F.t > 2 && !this.visible(F.ax, 60) && !this.visible(F.bx, 60)) F.phase = 3; }
     // 6 · vendedor con su hijo
+    // el hijo no te agarra: te mira y extiende la mano
     const V = g.vend;
-    if (!g.res[6] && !V.kid && !V.kidDone && this.dist(g.x, g.y, V.kx, V.ky) < 90) { V.kid = true; g.squashT = 0.15; this.bump(); }
-    if (V.kid) { V.kx = g.x - 30 * g.face; V.ky = g.y + 6; }
-    else if (V.kidDone) { V.kx += (L(4, 690) - V.kx) * Math.min(1, dt * 3); V.ky += (672 - V.ky) * Math.min(1, dt * 3); }
+    V.looking = !g.res[6] && this.dist(g.x, g.y, V.kx, V.ky) < 170;
     if (!g.res[6]) {
       if (g.act === 6) g.inRange = this.dist(g.x, g.y, L(4, 720), 655) < 150;
       if (g.x > L(4, 990)) this.ignore(6);
@@ -1178,7 +1270,7 @@ class Component extends DCLogic {
       if (g.act === 8) g.inRange = near(8);
       if (holdAt(8, g.inRange)) this.help(8);
       if (g.x > L(5, 770)) this.ignore(8);
-    } else if (g.res[8] === 'help' && g.sen.x < L(5, 1320)) g.sen.x += 120 * dt;
+    } else if (g.res[8] === 'help' && !g.sen.gone) { g.sen.x += 190 * dt; g.sen.y += (400 - g.sen.y) * Math.min(1, dt * 3); if (g.sen.x > L(5, 900) && !this.visible(g.sen.x, 60)) g.sen.gone = true; }
     // 9 · niño que perdió de vista a su acompañante
     const K = g.kid;
     K.t += dt;
@@ -1202,6 +1294,8 @@ class Component extends DCLogic {
     if (m.type === 'rh') {
       if (dx || dy) { g.mini = null; return; }
       m.t += dt;
+      // si el ritmo cuesta, alcanza con mantener apretado
+      if ((m.fails || 0) >= 2 && g.hold) { m.holdT = (m.holdT || 0) + dt; g.prog = m.holdT / 1.6; if (m.holdT >= 1.6) { g.art.coin = true; this.help(3); return; } }
       const T = (i) => 0.9 + i * 0.6;
       for (let i = 0; i < 4; i++) {
         if (!m.ticked[i] && m.t >= T(i)) { m.ticked[i] = true; this.tick(); }
@@ -1210,17 +1304,19 @@ class Component extends DCLogic {
       if (m.t > T(3) + 0.45) {
         const hits = m.judged.filter((j) => j === 'hit').length;
         if (hits >= 3) { g.art.coin = true; this.sfx('papel', { rate: 1.3 }); this.help(3); }
-        else { g.mini = { type: 'rh', t: 0, judged: [false, false, false, false], ticked: [false, false, false, false] }; this.oops(); }
+        else { g.mini = { type: 'rh', t: 0, judged: [false, false, false, false], ticked: [false, false, false, false], fails: (m.fails || 0) + 1 }; this.oops(); }
       }
     }
     if (m.type === 'coin') {
+      m.t = (m.t || 0) + dt;
+      if (m.t > 14) { g.mini = null; return; }
       m.cx = Math.min(this.W, Math.max(0, m.cx + dx * 220 * dt));
       m.cy = Math.min(700, Math.max(80, m.cy + dy * 220 * dt));
     }
   }
   press() {
     const g = this.g, L = (s, x) => this.L(s, x);
-    if (g.phase !== 'play' || g.stun > 0) return;
+    if (g.phase !== 'play' || g.stun > 0 || g.paused) return;
     const i = g.act, m = g.mini;
     if (!m && !(i >= 0 && g.inRange)) {
       let best = null, bd = 80;
@@ -1256,16 +1352,30 @@ class Component extends DCLogic {
     if (!m || m.type !== 'trace') return false;
     const P = this.TPATH, a = P[m.step], b = P[m.step + 1];
     if (!b) return true;
-    const dx = b[0] - a[0], dy = b[1] - a[1];
-    const want = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'ArrowRight' : 'ArrowLeft') : (dy > 0 ? 'ArrowDown' : 'ArrowUp');
-    if (key === want) this.traceStep(); else { this.traceFail(); if (m.step > 0) m.step--; }
+    const ok = this.traceKeys(m.step);
+    if (ok.includes(key)) this.traceStep(); else this.traceFail();
+    return true;
+  }
+  // teclas que valen para el tramo: en las diagonales, cualquiera de las dos
+  traceKeys(step) {
+    const P = this.TPATH, a = P[step], b = P[step + 1];
+    if (!b) return [];
+    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy), out = [];
+    if (Math.abs(dx) / len > 0.35) out.push(dx > 0 ? 'ArrowRight' : 'ArrowLeft');
+    if (Math.abs(dy) / len > 0.35) out.push(dy > 0 ? 'ArrowDown' : 'ArrowUp');
+    return out;
+  }
+  closeMini() {
+    const g = this.g;
+    if (!g.mini) return false;
+    g.mini = null; g.prog = 0; g.hold = false; g.mouseHold = false; this.holdStop(); this.note(330, 0, 0.08, 0.03, 'triangle', 1200);
     return true;
   }
   alternate(key) {
     const g = this.g, a = g.alt, now = performance.now();
     if (key !== a.last && now - a.at < 650) a.n++; else a.n = 1;
     a.last = key; a.at = now;
-    const active = (g.act === 2 && g.ask.contact && !g.mini) || (g.act === 6 && g.vend.kid);
+    const active = g.act === 2 && g.ask.contact && !g.mini;
     if (active && a.n >= 2) { this.bump(); g.squashT = 0.1; }
     if (a.n >= 4 && active) { this.ignore(g.act); a.n = 0; }
   }
@@ -1278,7 +1388,8 @@ class Component extends DCLogic {
     const i = g.act, tgt = i >= 0 ? this.target(i) : null;
     const left = g.left;
     const abs = Math.abs(Math.round(left));
-    const clock = (left < 0 ? '+' : '') + String(Math.floor(abs / 60)).padStart(2, '0') + ':' + String(abs % 60).padStart(2, '0');
+    // cuenta regresiva hasta que sale el tren de la H, en minutos y segundos (no es una hora)
+    const clock = (left < 0 ? '-' : '') + Math.floor(abs / 60) + "'" + String(abs % 60).padStart(2, '0') + '"';
     const pm = 8 * 60 + 50 + Math.floor((600 - left) / 60);
     const phoneTime = String(Math.floor(pm / 60)).padStart(2, '0') + ':' + String(pm % 60).padStart(2, '0');
     const crowdTint = 'saturate(' + Math.max(0.1, 0.34 - g.ignores * 0.03).toFixed(2) + ') brightness(' + (0.88 - g.focus * 0.14).toFixed(2) + ')';
@@ -1304,7 +1415,7 @@ class Component extends DCLogic {
       if (c.react > 0) tag(c.x, c.y, c.rtag || 'q');
       else if (c.rec && g.fight.phase < 2 && Math.floor(g.t * 1.5 + c.ph) % 3 === 0) tag(c.x, c.y, 'rec');
       const fr = lookUp ? 0 : c.idle ? (c.phone ? 3 + (Math.floor(g.t * 0.8 + c.ph) % 2) : 0) : (c.moving ? walkF(c.ph) : 0);
-      const flip = c.rec ? (L(3, 905) > c.x ? 1 : -1) : lookUp ? (g.x >= c.x ? 1 : -1) : (c.vx < 0 ? -1 : 1);
+      const flip = c.rec ? (L(3, 985) > c.x ? 1 : -1) : lookUp ? (g.x >= c.x ? 1 : -1) : (c.vx < 0 ? -1 : 1);
       actors.push(sprite(c.x, c.y, c.row, fr, { flip, filter: crowdTint }));
     });
     // la fila del molinete (se enojan si te colás)
@@ -1321,7 +1432,7 @@ class Component extends DCLogic {
       if (h.tag) tag(h.x, h.y, h.tag);
     });
     const glow = g.glowT > 0 ? ' drop-shadow(0 0 6px rgba(255,200,90,.9))' : '';
-    const needyF = (k) => (g.res[k] === 'ignore' ? 'grayscale(1) brightness(.8)' : 'saturate(1.2) brightness(' + (1 + (g.act === k ? 0.15 * (g.near || 0) : 0)).toFixed(2) + ')') + (g.hopI === k ? glow : '');
+    const needyF = (k) => (g.res[k] === 'ignore' ? 'grayscale(.6) brightness(.9)' : 'saturate(1.2) brightness(' + (1 + (g.act === k ? 0.15 * (g.near || 0) : 0)).toFixed(2) + ')') + (g.hopI === k ? glow : '');
     const hopOf = (k) => (g.hopI === k && g.hopT > 0 ? Math.sin((0.45 - g.hopT) / 0.45 * Math.PI) * 10 : 0);
     const needy = (k, x, y, row, frame, label, extra) => { if (inView(x)) actors.push(sprite(x, y, row, frame, Object.assign({ filter: needyF(k), label, hop: hopOf(k), flip: x > g.x ? -1 : 1 }, extra || {}))); };
     const props = [];
@@ -1329,7 +1440,7 @@ class Component extends DCLogic {
     // 0
     if (g.dni.ownerOn) needy(0, L(0, 1120), 640, 13, 0, 'Dueño del documento');
     // 1 · durmiendo
-    prop(Math.floor(g.t * 0.8) % 2 ? this.IMG.sleep2 : this.IMG.sleep1, L(1, 150), 346, 104, 36, 'Persona durmiendo sobre un cartón en un rincón', { f: g.res[1] === 'ignore' ? 'grayscale(1) brightness(.8)' : g.hopI === 1 && g.glowT > 0 ? 'drop-shadow(0 0 6px rgba(255,200,90,.9))' : 'none' });
+    prop(Math.floor(g.t * 0.8) % 2 ? this.IMG.sleep2 : this.IMG.sleep1, L(1, 150), 346, 104, 36, 'Persona durmiendo sobre un cartón en un rincón', { f: g.res[1] === 'ignore' ? 'grayscale(.6) brightness(.9)' : g.hopI === 1 && g.glowT > 0 ? 'drop-shadow(0 0 6px rgba(255,200,90,.9))' : 'none' });
     if (g.res[1] !== 'help' && Math.floor(g.t * 0.7) % 3 !== 2) tag(L(1, 120), 400, 'zzz');
     // 2
     needy(2, L(1, 985), g.ask.y, 14, g.ask.moving ? walkF(0) : 0, 'Persona que pregunta por la línea');
@@ -1350,11 +1461,11 @@ class Component extends DCLogic {
     // limpieza
     const C = g.cleaner;
     if (inView(C.x)) actors.push(sprite(C.x, C.y, 20, 3 + (Math.floor(g.t * 3) % 2), { flip: C.face, label: 'Persona limpiando el pasillo', filter: 'saturate(.9)' }));
-    prop(this.IMG.wet, L(3, 100), 540, 36, 36, 'Cartel de piso mojado');
-    prop(this.IMG.wet, L(3, 590), 580, 36, 36, 'Cartel de piso mojado');
+    prop(this.IMG.wet, L(3, 80), 560, 36, 36, 'Cartel de piso mojado');
+    prop(this.IMG.wet, L(3, 470), 600, 36, 36, 'Cartel de piso mojado');
     // 6 · vendedor y su hijo
     needy(6, L(4, 720), 655, 16, 0, 'Vendedor ambulante');
-    needy(6, g.vend.kx, g.vend.ky, 17, g.vend.kid ? walkF(0, 9) : 0, 'Hijo del vendedor', { sc: 0.8, flip: g.vend.kid ? g.face : -1 });
+    needy(6, g.vend.kx, g.vend.ky, 17, g.vend.looking ? 3 : 0, 'Hijo del vendedor, que te mira y extiende la mano', { sc: 0.8, flip: g.vend.looking ? (g.x > g.vend.kx ? 1 : -1) : 1 });
     // 7 · ascensor
     needy(7, g.lift.px, g.lift.py, 22, g.lift.stage === 3 ? 1 : 0, 'Persona en silla de ruedas frente al ascensor', { flip: -1 });
     const O = g.off;
@@ -1362,16 +1473,28 @@ class Component extends DCLogic {
     if (g.lift.stage === 2 && O.stuck) tag(O.x, O.y, 'dots');
     if (g.lift.stage === 1) tag(g.lift.px, g.lift.py, 'help');
     // 8 · señora
-    if (g.sen.x < L(5, 1300)) {
-      needy(8, g.sen.x, 410, 18, g.res[8] === 'help' ? walkF(0) : 0, 'Señora con la tarjeta rechazada', { flip: g.res[8] === 'help' ? 1 : -1 });
-      if (!g.res[8] && !g.inRange) { const c5 = g.t % 5; if (c5 < 1) tag(g.sen.x, 410, 'card'); else if (c5 < 1.9) tag(g.sen.x, 410, 'x'); }
+    if (!g.sen.gone) {
+      needy(8, g.sen.x, g.sen.y, 18, g.res[8] === 'help' ? walkF(0) : 0, 'Señora con la tarjeta rechazada', { flip: g.res[8] === 'help' ? 1 : -1 });
+      if (!g.res[8] && !g.inRange) { const c5 = g.t % 5; if (c5 < 1) tag(g.sen.x, g.sen.y, 'card'); else if (c5 < 1.9) tag(g.sen.x, g.sen.y, 'x'); }
     }
     g.guards.forEach((q) => { if (inView(q.x)) actors.push(sprite(q.x, q.y, 19, 0, { flip: q.face, label: 'Personal de la estación', filter: g.kid.stage === 1 ? 'brightness(1.15) drop-shadow(0 0 5px rgba(232,179,58,.9))' : 'none' })); });
     // 9 · niño perdido
     const K = g.kid;
-    needy(9, K.x, K.y, 17, K.moving ? walkF(0, 9) : 0, 'Niño buscando a su acompañante', { sc: 0.8, flip: K.face });
-    if (K.stage === 0 && !g.res[9]) tag(K.x, K.y + 12, Math.floor(g.t * 1.2) % 2 ? 'q' : 'tear');
+    needy(9, K.x, K.y, 23, K.moving ? walkF(0, 9) : 0, 'Niño buscando a su acompañante', { sc: 0.8, flip: K.face });
+    if (K.stage === 0 && !g.res[9] && !(g.act === 9 && g.inRange)) tag(K.x + 26, K.y + 12, Math.floor(g.t * 1.2) % 2 ? 'q' : 'tear');
     if (K.parent && inView(K.parent.x)) { actors.push(sprite(K.parent.x, K.parent.y, 8, K.parent.moving ? walkF(0) : 0, { flip: -1, label: 'Quien acompañaba al niño' })); if (!K.parent.moving) tag(K.parent.x, K.parent.y, 'heart'); }
+    // en el andén de la H: la gente que ayudaste también llegó (se ve lo que pasó)
+    const THANKS = [[0, 13, 620, 600], [2, 14, 700, 470], [3, 15, 820, 600], [4, 4, 660, 520], [6, 16, 960, 610], [7, 22, 900, 480], [8, 18, 1000, 470], [1, 2, 760, 560]];
+    THANKS.forEach(([k, row, x, y]) => {
+      if (g.res[k] !== 'help') return;
+      const wx0 = L(6, x);
+      if (!inView(wx0)) return;
+      const wave = g.phase !== 'play' && Math.floor(g.t * 3 + k) % 2;
+      actors.push(sprite(wx0, y, row, wave ? 3 : 0, { flip: -1, label: 'Una persona que ayudaste en el camino', filter: 'saturate(1.1)' }));
+      if (k === 6) actors.push(sprite(wx0 + 30, y + 6, 17, 0, { sc: 0.8, flip: -1, label: 'El hijo del vendedor' }));
+      if (k === 7) actors.push(sprite(wx0 - 44, y + 4, 19, 0, { flip: 1, label: 'Oficial de la estación' }));
+      if (g.phase !== 'play' && Math.floor(g.t * 1.5 + k) % 3 === 0) tag(wx0, y, 'heart');
+    });
     // corazones y puntos suspensivos de quien ayudaste o ignoraste
     for (let k = 0; k < 10; k++) {
       const t = this.target(k, true);
@@ -1386,7 +1509,7 @@ class Component extends DCLogic {
     const squash = g.squashT > 0;
     const ptr = fallen ? 'scale(' + (g.face < 0 ? -1 : 1) + ',1) rotate(' + (g.slipT > 0.5 ? 90 : 35) + 'deg)' : 'scale(' + ((g.face < 0 ? -1 : 1) * (squash ? 1.07 : 1)).toFixed(2) + ',' + (squash ? '0.92' : '1') + ')';
     // ícono de acción
-    const showBubble = !!tgt && !m && g.phase === 'play' && inView(tgt.x) && !(i === 8 && !g.inRange && g.t % 5 < 1.9);
+    const showBubble = !!tgt && !m && g.phase === 'play' && inView(tgt.x) && !(i === 8 && !g.inRange && g.t % 5 < 1.9) && !(i === 2 && g.pushT > 0.2);
     const bubbleTop = tgt ? tgt.y - (tgt.obj ? 120 : tgt.kid ? 150 : 166) : 0;
     const holdScene = (i === 0 && !g.dni.picked) || i === 1 || i === 4 || i === 5 || i === 8 || (i === 9 && g.kid.stage === 0);
     let rr = 0, rhythmDots = [], rhythmOn = false;
@@ -1411,7 +1534,7 @@ class Component extends DCLogic {
       trNext = m.drag ? TP[Math.min(TP.length - 1, m.step + 1)] : TP[m.step];
     }
     const ended = g.phase === 'end';
-    const shake = g.shakeT > 0 ? (Math.round(g.t * 60) % 2 ? 4 : -4) : 0;
+    const shake = g.shakeT > 0 && !this.reduced ? (Math.round(g.t * 60) % 2 ? 4 : -4) : 0;
     const fx = tgt && g.focus > 0.05 ? tgt.x : g.x, fy = tgt && g.focus > 0.05 ? tgt.y - 40 : g.y - 40;
     const zoom = Z * (1 + g.focus * 0.04);
     const wx = Math.round(640 - g.camX * zoom + shake), wy = Math.round(360 - g.camY * zoom);
@@ -1421,7 +1544,7 @@ class Component extends DCLogic {
     const vis = [segIdx - 1, segIdx, segIdx + 1].filter((s) => s >= 0 && s < 7);
     // flecha en el borde hacia el personal que buscás
     let edge = null;
-    if (!ended && (g.lift.stage === 1 || (g.lift.stage === 2 && g.off.stuck))) edge = g.off;
+    if (!ended && !g.res[7] && (g.lift.stage === 1 || (g.lift.stage === 2 && g.off.stuck))) edge = g.off;
     else if (!ended && g.kid.stage === 1 && !g.res[9]) edge = g.guards.reduce((a, b) => (Math.abs(b.x - g.x) < Math.abs(a.x - g.x) ? b : a));
     let edgeOn = false, edgeL = '0px', edgeT = '0px', edgeFlip = 1, edgeDir = 'row';
     if (edge) {
@@ -1429,7 +1552,7 @@ class Component extends DCLogic {
       if (s[0] < 0 || s[0] > 1280) { edgeOn = true; const right = s[0] > 1280; edgeL = right ? '1170px' : '20px'; edgeT = P(Math.min(600, Math.max(140, s[1]))); edgeFlip = right ? 1 : -1; edgeDir = right ? 'row-reverse' : 'row'; }
     }
     const NT = {
-      subte: ['SUBTE · LÍNEA H', 'H', '#f2c200', '#10110c', '10 MIN', '#e8b33a'], ask: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '¿¿??', '#e6dfc0'], clock: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '', ''],
+      subte: ['SUBTE · LÍNEA H · SALE EN', 'H', '#f2c200', '#10110c', clock, '#e8b33a'], ask: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '¿¿??', '#e6dfc0'], clock: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '', ''],
       mom: ['MAMÁ', 'M', '#c96a8a', '#2a1018', '', ''], angry: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '', ''], call: ['TU JEFE · LLAMADA PERDIDA', 'J', '#6b4a7a', '#f0e6f5', '', ''],
       late: ['TU JEFE', 'J', '#6b4a7a', '#f0e6f5', '!!!!', '#e05a4a'], group: ['GRUPO LABURO', 'G', '#2f7d6d', '#e6dfc0', '+' + (12 + Math.floor((600 - left) / 20)), '#7fd18a'], batt: ['BATERÍA', '!', '#e05a4a', '#10110c', left > 200 ? '15%' : '5%', '#e05a4a']
     }[g.peekKind] || ['', '', '#3b3d2c', '#e6dfc0', '', ''];
@@ -1449,14 +1572,17 @@ class Component extends DCLogic {
       fgs: vis.filter((s) => this.SEGS[s].fg).map((s) => ({ src: this.SEGS[s].fg, l: (s * 1280) + 'px' })),
       glows: vis.map((s) => ({ src: this.SEGS[s].glow, l: (s * 1280) + 'px' })),
       showTrain: g.trainX < 1400 && segIdx <= 1, trainX: Math.round(g.trainX / 4) * 4 + 'px',
-      worldFilter: 'grayscale(' + Math.min(1, g.ignores * 0.09).toFixed(2) + ') saturate(' + (1 + g.helps * 0.05).toFixed(2) + ') brightness(' + (1 - g.focus * 0.16).toFixed(2) + ')',
-      sosL: P(L(3, 626)), sosFx: !g.res[5] && g.act === 5 ? 'filter: drop-shadow(0 0 6px #e05a4a)' : F.phase === 1 ? 'filter: brightness(1.6) drop-shadow(0 0 10px #e05a4a)' : '',
+      showTrainH: ['in', 'stop', 'out'].includes(g.train.state) && segIdx >= 5, trainHX: (6 * 1280 + Math.round(g.train.x / 4) * 4) + 'px',
+      boardOn: g.x > 6 * 1280 - 300 && !ended,
+      boardTxt: g.phase === 'arrive' || ended ? (g.late ? 'SALIENDO' : 'DEMORADO') : clock, boardC: g.phase === 'arrive' || ended ? (g.late ? '#e8b33a' : '#e05a4a') : left > 120 ? '#7fd18a' : '#e8b33a', boardCls: g.phase === 'arrive' || ended ? 'blink' : '',
+      worldFilter: 'grayscale(' + Math.min(0.35, g.ignores * 0.035).toFixed(2) + ') saturate(' + (1 + g.helps * 0.05).toFixed(2) + ') brightness(' + (1 - g.focus * 0.16).toFixed(2) + ')',
+      sosL: P(L(3, 706)), sosFx: !g.res[5] && g.act === 5 ? 'filter: drop-shadow(0 0 6px #e05a4a)' : F.phase === 1 ? 'filter: brightness(1.6) drop-shadow(0 0 10px #e05a4a)' : '',
       puddles, gates, props, tags,
       showDni: !g.dni.picked && !g.res[0], dniL: P(g.dni.x - 14), dniT: P(g.dni.y - 10), dniRot: Math.round((g.dni.rot % 40) - 20) + 'deg',
       carryDni: g.dni.picked && !g.res[0], cdL: P(g.x + (g.face > 0 ? 6 : -24)), cdT: P(g.y - 44),
       showNotes: g.res[3] !== 'ignore' && inView(L(2, 590)), noteColor: g.res[3] === 'help' ? '#e8b33a' : '#c9d97a',
       notes: [{ l: P(L(2, 584)), t: '250px', d: '0s' }, { l: P(L(2, 604)), t: '242px', d: '.8s' }, { l: P(L(2, 570)), t: '260px', d: '1.6s' }],
-      coinInCase: !!g.art.coin, showCup: g.res[1] === 'help',
+      coinInCase: !!g.art.coin, showCup: g.res[1] === 'help', showBlanket: g.res[1] === 'help',
       showSpot: !!tgt && inView(tgt.x), spotL: P(tgt ? tgt.x - 110 : 0), spotT: P(tgt ? tgt.y - 80 : 0), spotOp: (0.35 + 0.65 * (g.near || 0)).toFixed(2),
       showPulse: !!tgt && g.phase === 'play' && !m && inView(tgt.x), pulseOp: (0.4 + 0.6 * (g.near || 0)).toFixed(2),
       pulseL: P(tgt ? tgt.x - 45 : 0), pulseT: P(tgt ? tgt.y - 45 - (tgt.obj ? 0 : 30) : 0),
@@ -1469,17 +1595,19 @@ class Component extends DCLogic {
       parts: g.parts.map((p) => ({ l: P(p.x), t: P(p.y), s: P(p.s), c: p.c, o: Math.max(0, 1 - p.t / p.life).toFixed(2) })),
       rhythmOn, rtL: P(g.x - 22), rtT: P(g.y - 60), rrS: P(rr), rrL: P(g.x - rr / 2), rrT: P(g.y - 38 - rr / 2), rdL: P(g.x - 20), rdT: P(g.y + 12), rhythmDots,
       holdPct: Math.round(Math.min(1, Math.max(0, g.prog)) * 100) + '%',
-      altOn: g.phase === 'play' && !m && ((i === 2 && g.ask.contact) || (i === 6 && g.vend.kid)), alL: P(g.x - 48), arL: P(g.x + 27), alT: P(g.y - 58),
+      altOn: g.phase === 'play' && !m && i === 2 && g.ask.contact && g.pushT > 0.15, alL: P(g.x - 48), arL: P(g.x + 27), alT: P(g.y - 58),
       showBubble, bL: P(tgt ? tgt.x - 26 : 0), bT: P(bubbleTop),
       bS: g.inRange ? '1' : '0.62', bOp: g.inRange ? '1' : '0.9', bRing: g.inRange ? '#e8b33a' : '#8f8c72', bGlow: g.inRange ? '.6' : '0',
-      iGrab: i === 0 && !g.dni.picked, iDni: i === 0 && g.dni.picked, iEye: i === 1, iExplain: i === 2, iNote: i === 3, iFood: i === 4, iAlarm: i === 5, iMoney: i === 6, iStaff: i === 7, iCard: i === 8, iHand: i === 9,
+      iGrab: i === 0 && !g.dni.picked, iDni: i === 0 && g.dni.picked, iEye: i === 1,
+      costGhost: g.inRange ? "-2'00\"" : '', teachOn: !g.taught && i === 0 && g.inRange && g.prog <= 0, iExplain: i === 2, iNote: i === 3, iFood: i === 4, iAlarm: i === 5, iMoney: i === 6, iStaff: i === 7, iCard: i === 8, iHand: i === 9,
       hintHold: holdScene && g.inRange && g.prog <= 0,
       coinOn: !!(m && m.type === 'coin'), chL: P(L(4, 726)), coinL: P(m && m.cx ? m.cx - 12 : 0), coinT: P(m && m.cy ? m.cy - 12 : 0),
       traceOn: !!(m && m.type === 'trace'), trLines, trStops, trTrail, trNextL: P(trNext[0]), trNextT: P(trNext[1]), trShake: m && m.shake > 0 ? (Math.round(g.t * 50) % 2 ? '8px' : '-8px') : '0px',
       vigAt: Math.round(fS[0]) + 'px ' + Math.round(fS[1]) + 'px', vigIn: Math.round(62 - g.focus * 34) + '%',
       flashAt: Math.round(flS[0]) + 'px ' + Math.round(flS[1]) + 'px',
       warmOp: Math.max(0, g.warmT / 0.9).toFixed(2), grayOp: Math.max(0, g.grayT / 0.8).toFixed(2),
-      ffOn: g.ff > 0 && !ended, costTxt: g.costTxt,
+      ffOn: g.ff > 0 && !ended, costTxt: g.costTxt, hudOn: !(m && m.type === 'trace'), pauseOn: g.paused,
+      escOn: !!(m && (m.type === 'trace' || m.type === 'coin')),
       timerColor: left > 240 ? '#e6dfc0' : left > 0 ? '#e8b33a' : '#e05a4a',
       clock, phoneTime,
       clockCls: !ended && (g.ff > 0 || (left < 120 && left > -30)) ? 'beat' : (g.lostT > 0 ? 'shk' : ''),
@@ -1492,13 +1620,34 @@ class Component extends DCLogic {
       ntWho: NT[0], ntAv: NT[1], ntAvBg: NT[2], ntAvFg: NT[3], ntIsText: !!NT[4], ntText: NT[4], ntColor: NT[5] || '#e6dfc0',
       dismissPeek: (e) => { e.stopPropagation(); this.g.peekT = Math.min(this.g.peekT, 0); this.focus(); },
       introOn: g.phase === 'intro',
-      endLate: ended && g.helps >= 5, endCancel: ended && g.helps < 5, ended,
-      resStr: g.res.map((r) => (r === 'help' ? 'h' : 'i')).join(''), slipStr: String(g.slips),
+      liveMsg: ended ? (g.late ? 'Llegaste al andén justo cuando el tren se iba. Próximo en 5 minutos.' : 'Llegaste a tiempo, pero el servicio está demorado.') : '',
+      endLate: ended && g.late, endCancel: ended && !g.late, ended,
+      resStr: g.res.map((r) => (r === 'help' ? 'h' : 'i')).join(''), slipStr: String(g.slips), horaStr: phoneTime, leftStr: clock,
       stageRef: this.stageRef,
       pointerDown: (e) => this.pointer(e),
       pointerMove: (e) => this.pointerMove(e),
       pointerUp: () => this.pointerUp(),
-      keyDown: (e) => {
+      keyDown: this.onKeyDown,
+      keyUp: this.onKeyUp,
+      togglePause: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.togglePause(); },
+      stopEv: (e) => { e.stopPropagation(); },
+      restart: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.holdStop(); this.reset(); this.focus(); }
+    };
+  }
+  togglePause() {
+    const g = this.g;
+    if (g.phase !== 'play') return;
+    g.paused = !g.paused; this.clearInput();
+    try { if (this.A) { if (g.paused) this.A.ctx.suspend(); else this.A.ctx.resume(); } } catch (e) {}
+    if (!g.paused) this.last = performance.now();
+  }
+  keyDown(e) {
+        this.unlock();
+        const g = this.g;
+        if (e.key === 'Escape') { e.preventDefault(); if (g.peekT > 0) g.peekT = 0; else if (!this.closeMini()) this.togglePause(); return; }
+        if (e.key === 'p' || e.key === 'P') { this.togglePause(); return; }
+        if (g.paused) return;
+        {
         this.unlock();
         const ARROWS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
         if (ARROWS.includes(e.key)) {
@@ -1513,15 +1662,11 @@ class Component extends DCLogic {
           if (!e.repeat) this.press();
           this.g.hold = true;
         } else if ((e.key === 'r' || e.key === 'R') && this.g.phase === 'end') { this.reset(); }
-        else if (e.key === 'Escape' && this.g.peekT > 0) this.g.peekT = 0;
-      },
-      keyUp: (e) => {
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); const k = { ...this.g.keys }; delete k[e.key]; this.g.keys = k; }
-        else if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); this.g.hold = false; }
-      },
-      stopEv: (e) => { e.stopPropagation(); },
-      restart: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.holdStop(); this.reset(); this.focus(); }
-    };
+        }
+  }
+  keyUp(e) {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); const k = { ...this.g.keys }; delete k[e.key]; this.g.keys = k; }
+    else if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); this.g.hold = false; }
   }
 }
 </script>

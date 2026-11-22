@@ -1,4 +1,4 @@
-import { h, render, Component } from './vendor/preact.module.js';
+import { h, render, Component, Fragment } from './vendor/preact.module.js';
 import { DC, loadDC } from './runtime.js';
 
 const stage = document.getElementById('stage');
@@ -17,23 +17,13 @@ const SPEAKER = (on) => h('svg', { width: 24, height: 24, viewBox: '0 0 12 12', 
   on ? [h('rect', { x: 8, y: 4, width: 1, height: 4, fill: '#e8b33a' }), h('rect', { x: 10, y: 3, width: 1, height: 6, fill: '#e8b33a' })]
      : [h('rect', { x: 8, y: 4, width: 1, height: 1, fill: '#e05a4a' }), h('rect', { x: 9, y: 5, width: 1, height: 2, fill: '#e05a4a' }), h('rect', { x: 10, y: 7, width: 1, height: 1, fill: '#e05a4a' }), h('rect', { x: 10, y: 4, width: 1, height: 1, fill: '#e05a4a' }), h('rect', { x: 8, y: 7, width: 1, height: 1, fill: '#e05a4a' })]);
 
+// Sin pantalla de título: el juego abre directo en el celular.
 class App extends Component {
   constructor() {
     super();
     let sound = true;
     try { sound = localStorage.getItem('combinacion-sound') !== 'off'; } catch (e) {}
-    this.state = { screen: 'game', sound };  // sin pantalla de título: arranca directo en el celular
-    this.start = this.start.bind(this);
-    this.onKey = (e) => { if (this.state.screen === 'title' && !e.repeat) { e.preventDefault(); this.start(); } };
-  }
-  componentDidMount() { window.addEventListener('keydown', this.onKey); if (this.titleEl) this.titleEl.focus(); }
-  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); }
-  start() {
-    if (this.state.screen !== 'title') return;
-    this.setState({ screen: 'game' }, () => {
-      // el juego abre con el celular: el próximo gesto habilita el audio y arranca
-      if (this.logic) this.logic.focus();
-    });
+    this.state = { sound };
   }
   toggleSound(e) {
     e.stopPropagation(); e.preventDefault();
@@ -43,32 +33,21 @@ class App extends Component {
     if (this.logic) this.logic.focus();
   }
   render(_, s) {
-    const mute = h('button', { class: 'mute', 'aria-label': s.sound ? 'Silenciar' : 'Activar sonido', onPointerDown: (e) => e.stopPropagation(), onClick: (e) => this.toggleSound(e) }, SPEAKER(s.sound));
-    if (s.screen === 'game') {
-      return h('x-frag', null,
-        h(DC, { key: 'Recorrido', name: 'Recorrido', props: { sound: s.sound, volume: 0.55 }, onLogic: (l) => { this.logic = l; window.combinacion = l; } }),
-        mute);
-    }
-    return h('x-frag', null,
-      h('img', { src: 'assets/img/tramo0.png', alt: '', style: 'position:absolute;inset:0;width:1280px;height:720px;image-rendering:pixelated;filter:brightness(.45) saturate(.8)' }),
-      h('div', { style: 'position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,7,5,.85) 0,rgba(7,7,5,.35) 55%,rgba(7,7,5,.1) 100%)' }),
-      h('div', { class: 'title', tabIndex: 0, ref: (el) => { this.titleEl = el; }, onClick: this.start, role: 'button', 'aria-label': 'Empezar a jugar' },
-        h('div', { style: 'position:absolute;left:70px;top:150px;display:flex;flex-direction:column;gap:22px' },
-          h('div', { class: 'logo' }, 'COMBI', h('br'), 'NACIÓN'),
-          h('div', { style: 'display:flex;align-items:center' },
-            h('div', { class: 'badge', style: 'background:#3bb3e6' }, 'A'),
-            h('div', { style: 'width:70px;height:6px;background:repeating-linear-gradient(90deg,#bdb795 0 8px,transparent 8px 14px)' }),
-            h('div', { class: 'badge', style: 'background:#f2c200' }, 'H')),
-          h('div', { class: 'tagline' }, 'Tenés 10 minutos para llegar al trabajo. En el camino pasan cosas que nadie mira.')),
-        h('div', { class: 'prompt', style: 'position:absolute;left:880px;top:300px;display:flex;flex-direction:column;align-items:center;gap:18px' },
-          h('div', { style: 'display:flex;gap:16px;align-items:flex-end' },
-            h('div', { class: 'key', style: 'width:96px;height:34px;padding-bottom:8px' }, h('div', { style: 'width:60px;height:5px;background:#10110c' })),
-            h('svg', { width: 34, height: 46, viewBox: '0 0 8 11', 'shape-rendering': 'crispEdges', 'aria-hidden': 'true' },
-              h('rect', { x: 0, y: 0, width: 8, height: 11, fill: '#070705' }), h('rect', { x: 1, y: 1, width: 6, height: 9, fill: '#e6dfc0' }), h('rect', { x: 1, y: 1, width: 3, height: 4, fill: '#e8b33a' }), h('rect', { x: 4, y: 1, width: 1, height: 4, fill: '#070705' }))),
-          h('div', { style: "font-family:'Silkscreen',monospace;font-size:14px;letter-spacing:3px;color:#e6dfc0" }, 'JUGAR')),
-        h('div', { class: 'credit' }, 'flechas o mouse · espacio o clic sostenido')),
-      mute);
+    return h(Fragment, null,
+      h(DC, { key: 'Recorrido', name: 'Recorrido', props: { sound: s.sound, volume: 0.55 }, onLogic: (l) => { this.logic = l; window.combinacion = l; } }),
+      h('button', { class: 'mute', 'aria-label': s.sound ? 'Silenciar' : 'Activar sonido', onPointerDown: (e) => e.stopPropagation(), onClick: (e) => this.toggleSound(e) }, SPEAKER(s.sound)));
   }
 }
 
-Promise.all(['Inicio', 'Recorrido', 'FinalTarde', 'FinalChoque'].map(loadDC)).then(() => render(h(App), stage));
+// Si el foco se va del escenario (por ejemplo, al hacer clic en el borde negro), las teclas siguen llegando al juego.
+const inStage = (t) => t && t.closest && t.closest('.stage');
+window.addEventListener('keydown', (e) => { const l = window.combinacion; if (l && !inStage(e.target) && l.onKeyDown) l.onKeyDown(e); });
+window.addEventListener('keyup', (e) => { const l = window.combinacion; if (l && !inStage(e.target) && l.onKeyUp) l.onKeyUp(e); });
+document.addEventListener('pointerdown', (e) => { const l = window.combinacion; if (l && !inStage(e.target) && !(e.target.closest && e.target.closest('button'))) l.focus(); });
+
+Promise.all(['Inicio', 'Recorrido', 'FinalTarde', 'FinalChoque'].map(loadDC))
+  .then(() => render(h(App), stage))
+  .catch((err) => {
+    console.error(err);
+    stage.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:60px;box-sizing:border-box;text-align:center;font-family:VT323,monospace;font-size:34px;color:#e6dfc0">No se pudo cargar el juego. Si abriste el archivo directamente, hace falta servirlo desde una página web (por ejemplo GitHub Pages).</div>';
+  });

@@ -22,6 +22,7 @@ NAMES = {  # nombres legibles para los archivos del sitio
     "6b951be773a38246e9b3ab722b9bc4f2": "ambiente", "b83d510f4cd6221807d9ce156a80d66c": "artista", "125e44b4f34220a6aa6aeb1a2a09e7df": "papel",
     "7be023788ae3c0d0c03a4f8ee205f3b6": "puerta", "77e479a7bc96b90959deb5886095c71f": "timbre", "0db6f002e9dfd08f9e07bbd4e20c373b": "tren",
     "603b2a40e6211807ad2937a5aa3d679a": "ventiladores",
+    "f9d2c57da1371508ed1ce23a16a829ce": "tren-h", "43cd79a8fc4f3db98671310de8c07f46": "sprites",
 }
 
 def main():
@@ -48,6 +49,16 @@ def main():
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-codec:a", "libmp3lame", "-b:a", "128k", out], check=True)
         else:
             shutil.copyfile(src, out)
+    # ícono y portada para compartir (se rehacen porque assets/img se borró arriba)
+    from PIL import Image, ImageDraw
+    img = os.path.join(SITE, "assets", "img")
+    tramo = [v[0] for k, v in used.items() if NAMES.get(k) == "tramo0"][0]
+    cover = Image.open(tramo).convert("RGB").resize((1200, 630), Image.NEAREST)
+    cover.save(os.path.join(img, "portada.png"))
+    ico = Image.new("RGBA", (64, 64), (0, 0, 0, 0)); d = ImageDraw.Draw(ico)
+    d.ellipse((2, 2, 61, 61), fill=(7, 7, 5)); d.ellipse((6, 6, 57, 57), fill=(242, 194, 0))
+    for r in [(20, 16, 27, 47), (37, 16, 44, 47), (27, 28, 37, 35)]: d.rectangle(r, fill=(16, 17, 12))
+    ico.save(os.path.join(img, "icono.png"))
     fonts = os.path.join(SITE, "assets", "fonts"); os.makedirs(fonts, exist_ok=True)
     npm = os.path.join(S, "npm")
     for pkg, f in [("fontsource-silkscreen-5.0.13", "silkscreen-latin-400-normal.woff2"), ("fontsource-silkscreen-5.0.13", "silkscreen-latin-700-normal.woff2"), ("fontsource-vt323-5.0.13", "vt323-latin-400-normal.woff2")]:

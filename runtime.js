@@ -1,7 +1,7 @@
 // Motor mínimo para correr las pantallas .dc.html del canvas como página común.
 // Lee el marcado (con {{huecos}}, <sc-if>, <sc-for> y <dc-import>) y la clase Component
 // de cada archivo, y lo dibuja con Preact.
-import { h, Component as PComponent } from './vendor/preact.module.js';
+import { h, Fragment, Component as PComponent } from './vendor/preact.module.js';
 
 const defs = {};
 const injected = new Set();
@@ -19,7 +19,9 @@ export class DCLogic {
 
 export async function loadDC(name) {
   if (defs[name]) return defs[name];
-  const src = await (await fetch(`dc/${name}.dc.html`)).text();
+  const res = await fetch(`dc/${name}.dc.html`);
+  if (!res.ok) throw new Error(`No se pudo cargar dc/${name}.dc.html (${res.status})`);
+  const src = await res.text();
   const doc = new DOMParser().parseFromString(src, 'text/html');
   const xdc = doc.querySelector('x-dc');
   const helmet = xdc.querySelector('helmet');
@@ -66,11 +68,11 @@ function conv(node, scope, key) {
   if (node.nodeType !== 1) return null;
   const name = node.localName;
   const kids = (sc) => [...node.childNodes].map((c, i) => conv(c, sc, i)).filter((x) => x !== null);
-  if (name === 'sc-if') return lookup((node.getAttribute('value') || '').replace(/[{}\s]/g, ''), scope) ? h('x-frag', { key, style: 'display:contents' }, kids(scope)) : null;
+  if (name === 'sc-if') return lookup((node.getAttribute('value') || '').replace(/[{}\s]/g, ''), scope) ? h(Fragment, { key }, kids(scope)) : null;
   if (name === 'sc-for') {
     const list = lookup((node.getAttribute('list') || '').replace(/[{}\s]/g, ''), scope) || [];
     const as = node.getAttribute('as') || 'item';
-    return h('x-frag', { key, style: 'display:contents' }, list.map((it, i) => h('x-frag', { key: i, style: 'display:contents' }, kids(Object.assign(Object.create(scope), { [as]: it, $index: i })))));
+    return h(Fragment, { key }, list.map((it, i) => h(Fragment, { key: i }, kids(Object.assign(Object.create(scope), { [as]: it, $index: i })))));
   }
   if (name === 'dc-import') {
     const props = {};
@@ -106,6 +108,6 @@ export class DC extends PComponent {
       if (changed) queueMicrotask(() => this.logic.componentDidUpdate(prev));
     }
     const vals = this.logic.renderVals();
-    return h('x-frag', { style: 'display:contents' }, this.def.nodes.map((n, i) => conv(n, vals, i)).filter((x) => x !== null));
+    return h(Fragment, null, this.def.nodes.map((n, i) => conv(n, vals, i)).filter((x) => x !== null));
   }
 }
